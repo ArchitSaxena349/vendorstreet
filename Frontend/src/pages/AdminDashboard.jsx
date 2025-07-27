@@ -192,7 +192,7 @@ const AdminDashboard = ({ user }) => {
                         <p className="text-sm text-gray-600">{vendor.email}</p>
                         <p className="text-sm text-gray-600">{vendor.phone}</p>
                       </div>
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                      <span className="px-2  py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
                         Pending
                       </span>
                     </div>

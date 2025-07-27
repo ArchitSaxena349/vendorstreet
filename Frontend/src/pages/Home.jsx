@@ -13,12 +13,12 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState('')
 
   const featuredCategories = [
-    { name: 'Grains & Cereals', count: '250+ products', image: '/api/placeholder/300/200' },
-    { name: 'Spices & Herbs', count: '180+ products', image: '/api/placeholder/300/200' },
-    { name: 'Dairy Products', count: '120+ products', image: '/api/placeholder/300/200' },
-    { name: 'Fruits & Vegetables', count: '300+ products', image: '/api/placeholder/300/200' },
-    { name: 'Meat & Seafood', count: '90+ products', image: '/api/placeholder/300/200' },
-    { name: 'Oils & Fats', count: '65+ products', image: '/api/placeholder/300/200' }
+    { name: 'Grains & Cereals', count: '250+ products', image: '/cereals.jpg' },
+    { name: 'Spices & Herbs', count: '180+ products', image: '/spices.jpg' },
+    { name: 'Dairy Products', count: '120+ products', image: '/dairy.jpg' },
+    { name: 'Fruits & Vegetables', count: '300+ products', image: '/vegies.jpg' },
+    { name: 'Meat & Seafood', count: '90+ products', image: '/meat.jpg' },
+    { name: 'Oils & Fats', count: '65+ products', image: '/oils.jpg' }
   ]
 
   const features = [
@@ -125,7 +125,13 @@ const Home = () => {
             {featuredCategories.map((category, index) => (
               <div key={index} className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-xl bg-gray-200 h-48 mb-4">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <img 
+                    src={category.image} 
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {/* Remove or modify this line to remove the green shadow */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                   <div className="absolute bottom-4 left-4 text-white">
                     <h3 className="text-xl font-semibold mb-1">{category.name}</h3>
                     <p className="text-sm opacity-90">{category.count}</p>
@@ -230,32 +236,6 @@ const Home = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join thousands of food businesses already using VendorStreet to source quality ingredients
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              to="/register" 
-              className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
-            >
-              Sign Up as Buyer
-            </Link>
-            <Link 
-              to="/vendor-application" 
-              className="border-2 border-green-600 text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors"
-            >
-              Apply as Vendor
-            </Link>
           </div>
         </div>
       </section>

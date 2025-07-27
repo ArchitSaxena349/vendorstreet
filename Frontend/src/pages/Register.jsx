@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 
+const URL = 'http://localhost:5000/api/auth/register'
+
 const Register = ({ onLogin }) => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -33,6 +35,17 @@ const Register = ({ onLogin }) => {
       return 'Please fill in all required fields'
     }
     
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      return 'Please enter a valid email address'
+    }
+    
+    // Phone validation (basic)
+    if (formData.phone.length < 10) {
+      return 'Please enter a valid phone number'
+    }
+    
     if (formData.password.length < 6) {
       return 'Password must be at least 6 characters long'
     }
@@ -61,24 +74,51 @@ const Register = ({ onLogin }) => {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch(URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          role: 'buyer' // Default role
+        })
+      })
+
+      const data = await response.json()
       
-      // Mock registration logic - replace with actual API call
-      const userData = {
-        id: Date.now(),
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.phone,
-        businessName: formData.businessName,
-        role: 'buyer', // Default role
-        verified: false
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed')  
       }
       
-      onLogin(userData)
-      navigate('/dashboard')
+      // Store the token in localStorage
+      if (data.data && data.data.token) {
+        localStorage.setItem('token', data.data.token)
+      }
+      
+      // Pass the correct user object to onLogin
+      if (data.data && data.data.user) {
+        onLogin(data.data.user)
+        
+        // Navigate based on user role
+        if (data.data.user.role === 'vendor') {
+          navigate('/vendor-dashboard')
+        } else if (data.data.user.role === 'admin') {
+          navigate('/admin')
+        } else {
+          navigate('/dashboard')
+        }
+      } else {
+        throw new Error('Invalid response format')
+      }
+      
     } catch (err) {
-      setError('Registration failed. Please try again.')
+      console.error('Registration error:', err)
+      setError(err.message || 'Registration failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -182,7 +222,7 @@ const Register = ({ onLogin }) => {
                   value={formData.phone}
                   onChange={handleInputChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="+91 9876543210"
                 />
               </div>
             </div>

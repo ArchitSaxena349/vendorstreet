@@ -1,8 +1,9 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+// import { AuthProvider } from '../../backend/contexts/AuthContext'
 import { useState, useEffect } from 'react'
-import Header from './components/header'
-import Footer from './components/footer'
+import Header from './components/header.jsx'
+import Footer from './components/footer.jsx'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -11,6 +12,13 @@ import VendorDashboard from './pages/VendorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import ProductListing from './pages/ProductListing'
 import VendorApplication from './pages/VendorApplication'
+import AboutPage from './pages/aboutus'
+import FaqPage from './pages/faq'
+import HelpCentrePage from './pages/helpcentre'
+import HowItWorksPage from './pages/howitworks'
+import ContactUsPage from './pages/contactus.jsx'
+import TermsOfServicePage from './pages/termsofservice.jsx'
+import PrivacyPolicyPage from './pages/privacy.jsx'
 import Chat from './pages/Chat'
 import Profile from './pages/Profile'
 import Inventory from './pages/Inventory'
@@ -43,6 +51,7 @@ function App() {
   }
 
   return (
+   
     <Router>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header user={user} userRole={userRole} onLogout={handleLogout} />
@@ -60,12 +69,20 @@ function App() {
             <Route path="/chat" element={<Chat user={user} />} />
             <Route path="/profile" element={<Profile user={user} />} />
             <Route path="/inventory" element={<Inventory user={user} />} />
+            <Route path="/about-us" element={<AboutPage />} />
+            <Route path="/faqq" element={<FaqPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/help" element={<HelpCentrePage />} />
+            <Route path="/contact" element={<ContactUsPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
           </Routes>
         </main>
 
         <Footer />
       </div>
     </Router>
+   
   )
 }
 

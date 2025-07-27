@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { 
-  PhoneIcon, 
-  EnvelopeIcon, 
+import {
+  PhoneIcon,
+  EnvelopeIcon,
   MapPinIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
@@ -26,7 +26,7 @@ const Footer = () => {
               <span className="text-xl font-bold">VendorStreet</span>
             </div>
             <p className="text-gray-300 text-sm leading-6">
-              Your trusted marketplace for food raw materials. Connecting verified vendors 
+              Your trusted marketplace for food raw materials. Connecting verified vendors
               with buyers for a seamless trading experience.
             </p>
             <div className="flex space-x-4">
@@ -55,7 +55,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/about-us" className="text-gray-300 hover:text-white transition-colors">
                   About Us
                 </Link>
               </li>
@@ -77,7 +77,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/faqq" className="text-gray-300 hover:text-white transition-colors">
                   FAQ
                 </Link>
               </li>
@@ -135,9 +135,9 @@ const Footer = () => {
               <Link to="/privacy" className="text-gray-300 hover:text-white text-sm transition-colors">
                 Privacy
               </Link>
-              <Link to="/cookies" className="text-gray-300 hover:text-white text-sm transition-colors">
+              {/* <Link to="/cookies" className="text-gray-300 hover:text-white text-sm transition-colors">
                 Cookies
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
