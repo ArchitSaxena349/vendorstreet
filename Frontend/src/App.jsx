@@ -1,8 +1,8 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import Header from './components/header'
-import Footer from './components/footer'
+import Header from './components/Header.jsx'
+import Footer from './components/Footer.jsx'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -13,6 +13,7 @@ import ProductListing from './pages/ProductListing'
 import VendorApplication from './pages/VendorApplication'
 import AboutPage from './pages/aboutus'
 import FaqPage from './pages/faq'
+import HelpCentrePage from './pages/helpcentre'
 import HowItWorksPage from './pages/howitworks'
 import Chat from './pages/Chat'
 import Profile from './pages/Profile'
@@ -66,6 +67,7 @@ function App() {
             <Route path="/about-us" element={<AboutPage />} />
             <Route path="/faqq" element={<FaqPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/help" element={<HelpCentrePage />} />
           </Routes>
         </main>
 

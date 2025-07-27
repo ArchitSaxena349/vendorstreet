@@ -89,7 +89,7 @@ const AboutPage = () => {
 
       {/* Call to Action Section */}
       <section className="container mx-auto px-6 py-20">
-        <div className="bg-blue-600 text-white rounded-lg p-10 text-center">
+        <div className="bg-[#00a63e] text-white rounded-lg p-10 text-center">
           <h2 className="text-3xl font-bold mb-4">Join the VendorStreet Community Today</h2>
           <p className="mb-6 max-w-2xl mx-auto">
             Whether you're a buyer looking for reliable suppliers or a vendor aiming to expand your reach, VendorStreet is the platform for you.
