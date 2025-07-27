@@ -15,6 +15,7 @@ import AboutPage from './pages/aboutus'
 import FaqPage from './pages/faq'
 import HelpCentrePage from './pages/helpcentre'
 import HowItWorksPage from './pages/howitworks'
+import ContactUsPage from './pages/contactus.jsx'
 import Chat from './pages/Chat'
 import Profile from './pages/Profile'
 import Inventory from './pages/Inventory'
@@ -68,6 +69,7 @@ function App() {
             <Route path="/faqq" element={<FaqPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/help" element={<HelpCentrePage />} />
+            <Route path="/contact" element={<ContactUsPage />} />
           </Routes>
         </main>
 

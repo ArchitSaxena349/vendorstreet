@@ -90,12 +90,12 @@ const HelpCentrePage = () => {
       {/* "Can't find answer" Section */}
       <section className="bg-white">
           <div className="container mx-auto px-6 py-20">
-              <div className="bg-blue-600 text-white rounded-lg p-10 text-center shadow-lg flex flex-col items-center">
+              <div className="bg-[#00a63e] text-white rounded-lg p-10 text-center shadow-lg flex flex-col items-center">
                   <h2 className="text-3xl font-bold mb-4">Still looking for answers?</h2>
                   <p className="mb-6 max-w-lg mx-auto">
                       If you can't find what you're looking for, our support team is here to help.
                   </p>
-                  <a href="/contact" className="bg-white text-blue-600 font-semibold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors">
+                  <a href="/contact" className="bg-white text-black font-semibold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors">
                       Contact Support
                   </a>
               </div>

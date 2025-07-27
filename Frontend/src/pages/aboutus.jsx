@@ -95,7 +95,7 @@ const AboutPage = () => {
             Whether you're a buyer looking for reliable suppliers or a vendor aiming to expand your reach, VendorStreet is the platform for you.
           </p>
           <div className="flex justify-center gap-4">
-            <a href="/register" className="bg-white text-blue-600 font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors">
+            <a href="/register" className="bg-white text-[#00a63e] font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors">
               Get Started as a Buyer
             </a>
             <a href="/vendor-application" className="bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
