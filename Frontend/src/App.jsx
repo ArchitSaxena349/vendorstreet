@@ -11,6 +11,7 @@ import VendorDashboard from './pages/VendorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import ProductListing from './pages/ProductListing'
 import VendorApplication from './pages/VendorApplication'
+import AboutPage from './pages/aboutus'
 import Chat from './pages/Chat'
 import Profile from './pages/Profile'
 import Inventory from './pages/Inventory'
@@ -60,6 +61,7 @@ function App() {
             <Route path="/chat" element={<Chat user={user} />} />
             <Route path="/profile" element={<Profile user={user} />} />
             <Route path="/inventory" element={<Inventory user={user} />} />
+            <Route path="/about-us" element={<AboutPage />} />
           </Routes>
         </main>
 
