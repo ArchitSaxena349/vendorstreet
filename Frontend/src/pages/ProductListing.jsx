@@ -44,7 +44,7 @@ const ProductListing = () => {
         unit: 'per 25kg bag',
         originalPrice: 950,
         discount: 11,
-        image: '/api/placeholder/300/300',
+        image: '/rice.jpg',
         inStock: true,
         stockQuantity: 45,
         minOrder: 1,
@@ -65,7 +65,7 @@ const ProductListing = () => {
         unit: 'per kg',
         originalPrice: 350,
         discount: 9,
-        image: '/api/placeholder/300/300',
+        image: '/turmeric.jpg',
         inStock: true,
         stockQuantity: 120,
         minOrder: 5,
@@ -86,7 +86,7 @@ const ProductListing = () => {
         unit: 'per liter',
         originalPrice: 70,
         discount: 7,
-        image: '/api/placeholder/300/300',
+        image: '/milk.jpg',
         inStock: false,
         stockQuantity: 0,
         minOrder: 10,
@@ -107,7 +107,7 @@ const ProductListing = () => {
         unit: 'per kg',
         originalPrice: 300,
         discount: 7,
-        image: '/api/placeholder/300/300',
+        image: '/chilli.jpg',
         inStock: true,
         stockQuantity: 85,
         minOrder: 2,
@@ -128,7 +128,7 @@ const ProductListing = () => {
         unit: 'per kg',
         originalPrice: 50,
         discount: 10,
-        image: '/api/placeholder/300/300',
+        image: '/floor.jpg',
         inStock: true,
         stockQuantity: 200,
         minOrder: 10,
@@ -342,7 +342,14 @@ const ProductListing = () => {
                 <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                   {/* Product Image */}
                   <div className="relative">
-                    <div className="w-full h-48 bg-gray-200"></div>
+                    <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'
+                    e.target.alt = 'Product image not available'}}
+                    />
                     {product.discount > 0 && (
                       <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs font-semibold rounded">
                         {product.discount}% OFF
