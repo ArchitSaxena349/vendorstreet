@@ -98,7 +98,7 @@ const HowItWorksPage = () => {
       {/* Call to Action Section */}
       <section className="bg-slate-50">
           <div className="container mx-auto px-6 py-20">
-              <div className="bg-gray-800 text-white rounded-lg p-10 text-center shadow-lg">
+              <div className="bg-[#00a63e] text-white rounded-lg p-10 text-center shadow-lg">
                   <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
                   <p className="mb-6 max-w-2xl mx-auto">
                       Become part of a growing community dedicated to revolutionizing the food supply industry.
