@@ -149,7 +149,7 @@ const ProductListing = () => {
         unit: 'per liter',
         originalPrice: 500,
         discount: 10,
-        image: '/api/placeholder/300/300',
+        image: '\coconut.jpg',
         inStock: true,
         stockQuantity: 30,
         minOrder: 1,
