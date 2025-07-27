@@ -1,12 +1,71 @@
 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import Header from './components/header'
+import Footer from './components/footer'
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Dashboard from './pages/Dashboard'
+import VendorDashboard from './pages/VendorDashboard'
+import AdminDashboard from './pages/AdminDashboard'
+import ProductListing from './pages/ProductListing'
+import VendorApplication from './pages/VendorApplication'
+import Chat from './pages/Chat'
+import Profile from './pages/Profile'
+import Inventory from './pages/Inventory'
+import './App.css'
 
 function App() {
-  
+  const [user, setUser] = useState(null)
+  const [userRole, setUserRole] = useState('buyer') // 'buyer', 'vendor', 'admin'
+
+  useEffect(() => {
+    // Check for stored user data
+    const storedUser = localStorage.getItem('vendorstreet_user')
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      setUser(userData)
+      setUserRole(userData.role || 'buyer')
+    }
+  }, [])
+
+  const handleLogin = (userData) => {
+    setUser(userData)
+    setUserRole(userData.role || 'buyer')
+    localStorage.setItem('vendorstreet_user', JSON.stringify(userData))
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+    setUserRole('buyer')
+    localStorage.removeItem('vendorstreet_user')
+  }
 
   return (
-    <>
-      <h1>Projet Started</h1>
-    </>
+    <Router>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header user={user} userRole={userRole} onLogout={handleLogout} />
+        
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/register" element={<Register onLogin={handleLogin} />} />
+            <Route path="/dashboard" element={<Dashboard user={user} userRole={userRole} />} />
+            <Route path="/vendor-dashboard" element={<VendorDashboard user={user} />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard user={user} />} />
+            <Route path="/products" element={<ProductListing />} />
+            <Route path="/vendor-application" element={<VendorApplication user={user} />} />
+            <Route path="/chat" element={<Chat user={user} />} />
+            <Route path="/profile" element={<Profile user={user} />} />
+            <Route path="/inventory" element={<Inventory user={user} />} />
+          </Routes>
+        </main>
+
+        <Footer />
+      </div>
+    </Router>
   )
 }
 
