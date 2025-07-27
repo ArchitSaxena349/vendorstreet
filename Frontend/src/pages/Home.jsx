@@ -82,10 +82,10 @@ const Home = () => {
                   placeholder="Search for food raw materials, vendors, or categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-6 py-4 pl-12 text-gray-900 rounded-full text-lg focus:ring-4 focus:ring-green-300 focus:outline-none"
+                  className="w-full bg-white px-6 py-4 pl-12 text-gray-900 rounded-full text-lg focus:ring-4 focus:ring-green-300 focus:outline-none"
                 />
                 <MagnifyingGlassIcon className="absolute left-4 top-4 h-6 w-6 text-gray-400" />
-                <button className="absolute right-2 top-2 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors">
+                <button className="absolute right-2 top-2 bg-gray-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors">
                   Search
                 </button>
               </div>

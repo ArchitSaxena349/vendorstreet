@@ -50,7 +50,7 @@ const Header = ({ user, userRole, onLogout }) => {
           </div>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-lg mx-8">
+          {/* <div className="hidden md:flex flex-1 max-w-lg mx-8">
             <div className="relative w-full">
               <input
                 type="text"
@@ -59,7 +59,7 @@ const Header = ({ user, userRole, onLogout }) => {
               />
               <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
-          </div>
+          </div> */}
 
           {/* Navigation Links - Desktop */}
           <nav className="hidden md:flex items-center space-x-8">
