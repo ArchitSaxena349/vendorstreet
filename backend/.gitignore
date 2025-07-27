@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+.env
 node_modules
 dist
 dist-ssr
@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# MongoDB
+*.dat
+*.bson
+*.0
+*.1
+*.2
+*.ns
+journal/
+diagnostic.data/
+mongod.lock
+WiredTiger*
