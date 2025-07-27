@@ -41,7 +41,7 @@ const ContactUsPage = () => {
             <div className="space-y-6">
               <div className="flex items-center space-x-4">
                 <span className="text-2xl text-blue-600">📞</span> 
-                <a href="tel:+917880730633" className="text-gray-700 hover:text-blue-600 text-lg">+91 7880730633</a>
+                <a href="tel:+918887662519" className="text-gray-700 hover:text-blue-600 text-lg">+91 8887662519</a>
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-2xl text-blue-600">✉️</span> 
