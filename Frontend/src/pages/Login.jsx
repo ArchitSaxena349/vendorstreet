@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 
+const URL = 'http://localhost:5000/api/auth/login'
+
 const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
     email: '',
@@ -25,30 +27,78 @@ const Login = ({ onLogin }) => {
     setIsLoading(true)
     setError('')
 
+    if (!formData.email || !formData.password) {
+        setError('Email and password are required')
+        setIsLoading(false)
+        return
+    }
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock login logic - replace with actual API call
-      if (formData.email && formData.password) {
-        const userData = {
-          id: 1,
-          name: formData.email.split('@')[0],
-          email: formData.email,
-          role: 'buyer', // Default role
-          verified: false
+        const response = await fetch(URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: formData.email,
+                password: formData.password
+            })
+        })
+
+        const data = await response.json()
+        console.log('Login response:', data) // Debug log
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Login failed')  
         }
         
-        onLogin(userData)
-        navigate('/dashboard')
-      } else {
-        setError('Please fill in all fields')
-      }
+        // Check if response has the expected structure
+        if (!data.success || !data.data) {
+            throw new Error('Invalid response format from server')
+        }
+        
+        // Store the token in localStorage
+        if (data.data.token) {
+            localStorage.setItem('token', data.data.token)
+        } else {
+            throw new Error('No authentication token received')
+        }
+        
+        // Pass the user object to onLogin
+        if (data.data.user) {
+            console.log('User data:', data.data.user) // Debug log
+            onLogin(data.data.user)
+            
+            // Navigate based on user role
+            if (data.data.user.role === 'vendor') {
+                navigate('/vendor-dashboard')
+            } else if (data.data.user.role === 'admin') {
+                navigate('/admin')
+            } else {
+                navigate('/dashboard')
+            }
+        } else {
+            throw new Error('No user data received')
+        }
+        
     } catch (err) {
-      setError('Login failed. Please try again.')
+        console.error('Login error:', err)
+        setError(err.message || 'Login failed. Please try again.')
     } finally {
-      setIsLoading(false)
+        setIsLoading(false)
     }
+  }
+
+  // Quick login function for demo
+  const quickLogin = (email, password) => {
+    setFormData({ email, password })
+    // Auto-submit after a short delay
+    setTimeout(() => {
+      const form = document.querySelector('form')
+      if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
+      }
+    }, 100)
   }
 
   return (
@@ -207,10 +257,37 @@ const Login = ({ onLogin }) => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Login Credentials</h3>
-          <div className="text-xs text-blue-600 space-y-1">
-            <div>Buyer: buyer@demo.com / password</div>
-            <div>Vendor: vendor@demo.com / password</div>
-            <div>Admin: admin@demo.com / password</div>
+          <div className="text-xs text-blue-600 space-y-2">
+            <div className="flex justify-between items-center">
+              <span>Buyer: buyer@demo.com / demo123</span>
+              <button
+                type="button"
+                onClick={() => quickLogin('buyer@demo.com', 'demo123')}
+                className="text-blue-800 hover:text-blue-900 underline"
+              >
+                Use
+              </button>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Vendor: vendor@demo.com / demo123</span>
+              <button
+                type="button"
+                onClick={() => quickLogin('vendor@demo.com', 'demo123')}
+                className="text-blue-800 hover:text-blue-900 underline"
+              >
+                Use
+              </button>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Admin: admin@demo.com / demo123</span>
+              <button
+                type="button"
+                onClick={() => quickLogin('admin@demo.com', 'demo123')}
+                className="text-blue-800 hover:text-blue-900 underline"
+              >
+                Use
+              </button>
+            </div>
           </div>
         </div>
       </div>
