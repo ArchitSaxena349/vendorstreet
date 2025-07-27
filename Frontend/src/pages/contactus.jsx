@@ -41,17 +41,17 @@ const ContactUsPage = () => {
             <div className="space-y-6">
               <div className="flex items-center space-x-4">
                 <span className="text-2xl text-blue-600">📞</span> 
-                <a href="tel:+15551234567" className="text-gray-700 hover:text-blue-600 text-lg">+1 (555) 123-4567</a>
+                <a href="tel:+917880730633" className="text-gray-700 hover:text-blue-600 text-lg">+91 7880730633</a>
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-2xl text-blue-600">✉️</span> 
-                <a href="mailto:support@vendorstreet.com" className="text-gray-700 hover:text-blue-600 text-lg">support@vendorstreet.com</a>
+                <a href="mailto:architsaxena349@gmail.com" className="text-gray-700 hover:text-blue-600 text-lg">architsaxena349@gmail.com</a>
               </div>
               <div className="flex items-start space-x-4">
                 <span className="text-2xl text-blue-600 mt-1">📍</span>
                 <p className="text-gray-700 text-lg">
-                  123 Business Street,<br />
-                  Food District, City 12345
+                  123 Vikas Nagar,<br />
+                  Food District, Lucknow 226022
                 </p>
               </div>
             </div>

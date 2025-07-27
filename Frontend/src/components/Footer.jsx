@@ -105,17 +105,17 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <PhoneIcon className="h-5 w-5 text-green-400" />
-                <span className="text-gray-300">+1 (555) 123-4567</span>
+                <span className="text-gray-300">+91 7880730633</span>
               </div>
               <div className="flex items-center space-x-2">
                 <EnvelopeIcon className="h-5 w-5 text-green-400" />
-                <span className="text-gray-300">support@vendorstreet.com</span>
+                <span className="text-gray-300">architsaxena349@gmail.com</span>
               </div>
               <div className="flex items-start space-x-2">
                 <MapPinIcon className="h-5 w-5 text-green-400 mt-0.5" />
                 <span className="text-gray-300">
-                  123 Business Street,<br />
-                  Food District, City 12345
+                  123 Vikas Nagar ,<br />
+                  Food District, Lucknow 226022
                 </span>
               </div>
             </div>
