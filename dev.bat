@@ -2,6 +2,10 @@
 echo Starting VendorStreet Development Environment...
 echo.
 
+REM Clear any existing processes on ports
+echo Clearing existing processes...
+call kill-ports.bat
+
 REM Check if node_modules exist
 if not exist "node_modules" (
     echo Installing root dependencies...
