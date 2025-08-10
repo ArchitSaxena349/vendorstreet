@@ -10,7 +10,24 @@ const Footer = () => {
   const currentYear = new Date().getFullYear()
 
   const openWhatsApp = () => {
-    window.open('https://wa.me/your-whatsapp-number', '_blank')
+    try {
+      const phoneNumber = '918887662519' // +91 8887662519 without + and spaces
+      const message = 'Hi! I found your contact through VendorStreet. I would like to know more about your services.'
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+      
+      // Check if WhatsApp Web/App is available
+      const newWindow = window.open(whatsappUrl, '_blank')
+      
+      // Fallback if popup is blocked
+      if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+        // Try alternative approach
+        window.location.href = whatsappUrl
+      }
+    } catch (error) {
+      console.error('Error opening WhatsApp:', error)
+      // Fallback to showing phone number
+      alert('WhatsApp could not be opened. Please contact us at +91 8887662519')
+    }
   }
 
   return (
@@ -32,8 +49,9 @@ const Footer = () => {
             <div className="flex space-x-4">
               <button
                 onClick={openWhatsApp}
-                className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
-                title="Chat on WhatsApp"
+                className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                title="Chat on WhatsApp (+91 8887662519)"
+                aria-label="Contact us on WhatsApp"
               >
                 <ChatBubbleLeftRightIcon className="h-5 w-5" />
               </button>

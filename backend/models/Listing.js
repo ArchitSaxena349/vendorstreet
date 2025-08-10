@@ -100,4 +100,4 @@ listingSchema.index({ categoryId: 1, status: 1, isInStock: 1 });
 listingSchema.index({ price: 1 });
 listingSchema.index({ createdAt: -1 });
 
-export default mongoose.model('Listing', listingSchema);
+export default mongoose.models.Listing || mongoose.model('Listing', listingSchema);

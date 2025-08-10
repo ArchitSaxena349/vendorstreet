@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 // You can use an icon library like 'react-icons' for better visuals
 // import { FiShield, FiMessageCircle, FiBox, FiCheckCircle } from 'react-icons/fi';
@@ -95,12 +96,12 @@ const AboutPage = () => {
             Whether you're a buyer looking for reliable suppliers or a vendor aiming to expand your reach, VendorStreet is the platform for you.
           </p>
           <div className="flex justify-center gap-4">
-            <a href="/register" className="bg-white text-[#00a63e] font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors">
+            <Link to="/register" className="bg-white text-green-600 font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
               Get Started as a Buyer
-            </a>
-            <a href="/vendor-application" className="bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+            </Link>
+            <Link to="/vendor-application" className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors">
               Apply to be a Vendor
-            </a>
+            </Link>
           </div>
         </div>
       </section>

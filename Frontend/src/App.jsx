@@ -2,26 +2,29 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 // import { AuthProvider } from '../../backend/contexts/AuthContext'
 import { useState, useEffect } from 'react'
-import Header from './components/header.jsx'
-import Footer from './components/footer.jsx'
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
-import VendorDashboard from './pages/VendorDashboard'
-import AdminDashboard from './pages/AdminDashboard'
-import ProductListing from './pages/ProductListing'
-import VendorApplication from './pages/VendorApplication'
-import AboutPage from './pages/aboutus'
-import FaqPage from './pages/faq'
-import HelpCentrePage from './pages/helpcentre'
-import HowItWorksPage from './pages/howitworks'
+import Header from './components/Header.jsx'
+import Footer from './components/Footer.jsx'
+import Home from './pages/Home.jsx'
+import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
+import Dashboard from './pages/Dashboard.jsx'
+import VendorDashboard from './pages/VendorDashboard.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
+import ProductListing from './pages/ProductListing.jsx'
+import VendorApplication from './pages/VendorApplication.jsx'
+import AboutPage from './pages/aboutus.jsx'
+import FaqPage from './pages/faq.jsx'
+import HelpCentrePage from './pages/helpcentre.jsx'
+import HowItWorksPage from './pages/howitworks.jsx'
 import ContactUsPage from './pages/contactus.jsx'
 import TermsOfServicePage from './pages/termsofservice.jsx'
 import PrivacyPolicyPage from './pages/privacy.jsx'
-import Chat from './pages/Chat'
-import Profile from './pages/Profile'
-import Inventory from './pages/Inventory'
+import Chat from './pages/Chat.jsx'
+import Profile from './pages/Profile.jsx'
+import Inventory from './pages/Inventory.jsx'
+import MyOrders from './pages/MyOrders.jsx'
+import Favorites from './pages/Favorites.jsx'
+import Notifications from './pages/Notifications.jsx'
 import './App.css'
 
 function App() {
@@ -69,6 +72,9 @@ function App() {
             <Route path="/chat" element={<Chat user={user} />} />
             <Route path="/profile" element={<Profile user={user} />} />
             <Route path="/inventory" element={<Inventory user={user} />} />
+            <Route path="/orders" element={<MyOrders user={user} />} />
+            <Route path="/favorites" element={<Favorites user={user} />} />
+            <Route path="/notifications" element={<Notifications user={user} />} />
             <Route path="/about-us" element={<AboutPage />} />
             <Route path="/faqq" element={<FaqPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />

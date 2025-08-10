@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { 
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -12,23 +13,67 @@ import {
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 
 const ProductListing = () => {
+  const [searchParams] = useSearchParams()
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [priceRange, setPriceRange] = useState([0, 10000])
+  const [priceInputs, setPriceInputs] = useState({ min: '', max: '' })
   const [sortBy, setSortBy] = useState('name')
   const [favorites, setFavorites] = useState(new Set())
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(window.innerWidth >= 1024) // Show by default on large screens
 
-  const categories = [
-    { id: 'all', name: 'All Categories', count: 156 },
-    { id: 'grains', name: 'Grains & Cereals', count: 45 },
-    { id: 'spices', name: 'Spices & Herbs', count: 38 },
-    { id: 'dairy', name: 'Dairy Products', count: 24 },
-    { id: 'fruits', name: 'Fruits & Vegetables', count: 32 },
-    { id: 'meat', name: 'Meat & Seafood', count: 17 }
-  ]
+  // Handle responsive filter visibility
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && !showFilters) {
+        setShowFilters(true) // Auto-show on large screens
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [showFilters])
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
+  const [premiumOnly, setPremiumOnly] = useState(false)
+  const [inStockOnly, setInStockOnly] = useState(false)
+
+  // Initialize search query from URL parameters
+  useEffect(() => {
+    const urlSearchQuery = searchParams.get('search')
+    if (urlSearchQuery) {
+      setSearchQuery(urlSearchQuery)
+    }
+  }, [searchParams])
+
+  // Initialize price inputs
+  useEffect(() => {
+    setPriceInputs({
+      min: priceRange[0] === 0 ? '' : priceRange[0].toString(),
+      max: priceRange[1] === 10000 ? '' : priceRange[1].toString()
+    })
+  }, [priceRange])
+
+  // Calculate dynamic category counts based on actual products
+  const categoriesWithCounts = useMemo(() => {
+    const baseCategoriesData = [
+      { id: 'all', name: 'All Categories' },
+      { id: 'grains', name: 'Grains & Cereals' },
+      { id: 'spices', name: 'Spices & Herbs' },
+      { id: 'dairy', name: 'Dairy Products' },
+      { id: 'fruits', name: 'Fruits & Vegetables' },
+      { id: 'meat', name: 'Meat & Seafood' },
+      { id: 'oils', name: 'Oils & Fats' }
+    ]
+
+    return baseCategoriesData.map(category => ({
+      ...category,
+      count: category.id === 'all' 
+        ? products.length 
+        : products.filter(product => product.category === category.id).length
+    })).filter(category => category.count > 0 || category.id === 'all') // Only show categories with products
+  }, [products])
 
   useEffect(() => {
     // Mock data - replace with actual API call
@@ -187,6 +232,21 @@ const ProductListing = () => {
       product.price >= priceRange[0] && product.price <= priceRange[1]
     )
 
+    // Verified vendors filter
+    if (verifiedOnly) {
+      filtered = filtered.filter(product => product.vendorVerified)
+    }
+
+    // Premium vendors filter (assuming premium vendors have rating >= 4.5)
+    if (premiumOnly) {
+      filtered = filtered.filter(product => product.vendorRating >= 4.5)
+    }
+
+    // In stock filter
+    if (inStockOnly) {
+      filtered = filtered.filter(product => product.inStock)
+    }
+
     // Sort
     filtered = [...filtered].sort((a, b) => {
       switch (sortBy) {
@@ -203,7 +263,7 @@ const ProductListing = () => {
     })
 
     setFilteredProducts(filtered)
-  }, [products, searchQuery, selectedCategory, priceRange, sortBy])
+  }, [products, searchQuery, selectedCategory, priceRange, sortBy, verifiedOnly, premiumOnly, inStockOnly])
 
   const toggleFavorite = (productId) => {
     const newFavorites = new Set(favorites)
@@ -243,10 +303,21 @@ const ProductListing = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex items-center space-x-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors relative"
               >
                 <FunnelIcon className="h-5 w-5" />
-                <span>Filters</span>
+                <span>{showFilters ? 'Hide Filters' : 'Show Filters'}</span>
+                {(selectedCategory !== 'all' || verifiedOnly || premiumOnly || inStockOnly || priceRange[0] > 0 || priceRange[1] < 10000) && (
+                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {[
+                      selectedCategory !== 'all',
+                      verifiedOnly,
+                      premiumOnly,
+                      inStockOnly,
+                      priceRange[0] > 0 || priceRange[1] < 10000
+                    ].filter(Boolean).length}
+                  </span>
+                )}
               </button>
 
               <select
@@ -262,23 +333,106 @@ const ProductListing = () => {
             </div>
           </div>
 
-          {/* Results Count */}
+          {/* Results Count and Active Filters */}
           <div className="mt-4">
-            <p className="text-gray-600">
-              Showing {filteredProducts.length} of {products.length} products
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <p className="text-gray-600">
+                Showing {filteredProducts.length} of {products.length} products
+              </p>
+              
+              {/* Active Filters */}
+              <div className="flex flex-wrap gap-2">
+                {selectedCategory !== 'all' && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {categoriesWithCounts.find(cat => cat.id === selectedCategory)?.name}
+                    <button
+                      onClick={() => setSelectedCategory('all')}
+                      className="ml-1 text-green-600 hover:text-green-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {verifiedOnly && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Verified Only
+                    <button
+                      onClick={() => setVerifiedOnly(false)}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {premiumOnly && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    Premium Only
+                    <button
+                      onClick={() => setPremiumOnly(false)}
+                      className="ml-1 text-purple-600 hover:text-purple-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {inStockOnly && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    In Stock Only
+                    <button
+                      onClick={() => setInStockOnly(false)}
+                      className="ml-1 text-orange-600 hover:text-orange-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {(priceRange[0] > 0 || priceRange[1] < 10000) && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    ₹{priceRange[0]} - ₹{priceRange[1]}
+                    <button
+                      onClick={() => {
+                        setPriceRange([0, 10000])
+                        setPriceInputs({ min: '', max: '' })
+                      }}
+                      className="ml-1 text-gray-600 hover:text-gray-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-8">
+        <div className="flex gap-8 relative">
+          {/* Mobile Filter Overlay */}
+          {showFilters && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+              onClick={() => setShowFilters(false)}
+            />
+          )}
+          
           {/* Sidebar Filters */}
-          <div className={`w-80 flex-shrink-0 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-            <div className="bg-white rounded-lg shadow p-6 sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+          <div className={`w-80 flex-shrink-0 transition-all duration-300 ${showFilters ? 'block' : 'hidden'} ${showFilters ? 'fixed lg:relative top-0 left-0 h-full lg:h-auto z-50 lg:z-auto overflow-y-auto lg:overflow-visible' : ''}`}>
+            <div className="bg-white rounded-lg shadow p-6 sticky top-8 lg:top-8">
+              {/* Mobile Close Button */}
+              <div className="flex items-center justify-between mb-4 lg:mb-0">
+                <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <div className="space-y-2 mb-6">
-                {categories.map((category) => (
+                {categoriesWithCounts.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
@@ -302,35 +456,98 @@ const ProductListing = () => {
                   <input
                     type="number"
                     placeholder="Min"
-                    value={priceRange[0]}
-                    onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
+                    value={priceInputs.min}
+                    onChange={(e) => {
+                      const inputValue = e.target.value
+                      setPriceInputs(prev => ({ ...prev, min: inputValue }))
+                      
+                      const numValue = inputValue === '' ? 0 : parseInt(inputValue)
+                      if (!isNaN(numValue) && numValue >= 0) {
+                        setPriceRange([numValue, priceRange[1]])
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value === '') {
+                        setPriceInputs(prev => ({ ...prev, min: '0' }))
+                        setPriceRange([0, priceRange[1]])
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    min="0"
                   />
                   <span className="text-gray-500">to</span>
                   <input
                     type="number"
                     placeholder="Max"
-                    value={priceRange[1]}
-                    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 10000])}
+                    value={priceInputs.max}
+                    onChange={(e) => {
+                      const inputValue = e.target.value
+                      setPriceInputs(prev => ({ ...prev, max: inputValue }))
+                      
+                      const numValue = inputValue === '' ? 10000 : parseInt(inputValue)
+                      if (!isNaN(numValue) && numValue >= 0) {
+                        setPriceRange([priceRange[0], numValue])
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value === '') {
+                        setPriceInputs(prev => ({ ...prev, max: '10000' }))
+                        setPriceRange([priceRange[0], 10000])
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    min="0"
                   />
                 </div>
               </div>
 
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendor Type</h3>
               <div className="space-y-2">
-                <label className="flex items-center">
-                  <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                <label className="flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={verifiedOnly}
+                    onChange={(e) => setVerifiedOnly(e.target.checked)}
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500" 
+                  />
                   <span className="ml-2 text-sm text-gray-700">Verified Vendors Only</span>
                 </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
-                  <span className="ml-2 text-sm text-gray-700">Premium Vendors</span>
+                <label className="flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={premiumOnly}
+                    onChange={(e) => setPremiumOnly(e.target.checked)}
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500" 
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Premium Vendors (4.5+ rating)</span>
                 </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                <label className="flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={inStockOnly}
+                    onChange={(e) => setInStockOnly(e.target.checked)}
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500" 
+                  />
                   <span className="ml-2 text-sm text-gray-700">In Stock Only</span>
                 </label>
+              </div>
+
+              {/* Clear Filters Button */}
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setSelectedCategory('all')
+                    setPriceRange([0, 10000])
+                    setPriceInputs({ min: '', max: '' })
+                    setVerifiedOnly(false)
+                    setPremiumOnly(false)
+                    setInStockOnly(false)
+                    setSearchQuery('')
+                  }}
+                  className="w-full px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Clear All Filters
+                </button>
               </div>
             </div>
           </div>

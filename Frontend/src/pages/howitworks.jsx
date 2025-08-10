@@ -1,7 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 // Placeholder icons can be replaced with a library like react-icons or SVGs
-const Step = ({ number, title, description, colorClass = 'bg-blue-600' }) => (
+const Step = ({ number, title, description, colorClass = 'bg-green-600' }) => (
   <div className="flex items-start space-x-4">
     <div className={`flex-shrink-0 h-10 w-10 ${colorClass} text-white rounded-full flex items-center justify-center font-bold text-lg`}>
       {number}
@@ -37,24 +38,24 @@ const HowItWorksPage = () => {
             <h2 className="text-3xl font-bold text-center md:text-left text-blue-700">
               For Buyers
             </h2>
-            <div className="space-y-6 border-l-2 border-blue-200 pl-6">
+            <div className="space-y-6 border-l-2 border-green-200 pl-6">
               <Step
                 number="1"
                 title="Create Your Account"
                 description="Simply sign up to get started. Every new user is automatically a buyer, giving you immediate access to browse the marketplace."
-                colorClass="bg-blue-600"
+                colorClass="bg-green-600"
               />
               <Step
                 number="2"
                 title="Discover & Connect"
                 description="Explore listings from a network of verified vendors. Contact them directly through WhatsApp or our secure in-app chat to ask questions and discuss your needs."
-                colorClass="bg-blue-600"
+                colorClass="bg-green-600"
               />
               <Step
                 number="3"
                 title="Source with Confidence"
                 description="Procure raw materials knowing that every vendor has passed FSSAI and physical address verification, ensuring a trustworthy and reliable supply chain."
-                colorClass="bg-blue-600"
+                colorClass="bg-green-600"
               />
             </div>
           </div>
@@ -104,12 +105,12 @@ const HowItWorksPage = () => {
                       Become part of a growing community dedicated to revolutionizing the food supply industry.
                   </p>
                   <div className="flex flex-col sm:flex-row justify-center gap-4">
-                      <a href="/register" className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-500 transition-colors">
+                      <Link to="/register" className="bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
                           Sign Up Now
-                      </a>
-                      <a href="/contact" className="bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-gray-500 transition-colors">
+                      </Link>
+                      <Link to="/contact" className="bg-white text-green-600 font-semibold py-3 px-8 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
                           Contact Us
-                      </a>
+                      </Link>
                   </div>
               </div>
           </div>

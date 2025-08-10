@@ -2,7 +2,12 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import ConnectDB from './utils/db.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -30,10 +35,90 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Serve static files (uploaded images and documents)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// API documentation endpoint
+app.get('/api', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'VendorStreet API v1.0.0',
+        description: 'Food raw materials marketplace API',
+        endpoints: {
+            auth: {
+                base: '/api/auth',
+                routes: {
+                    home: 'GET /api/auth/',
+                    register: 'POST /api/auth/register',
+                    login: 'POST /api/auth/login',
+                    profile: 'GET /api/auth/profile (requires auth)',
+                    updateProfile: 'PUT /api/auth/profile (requires auth)'
+                }
+            },
+            vendors: {
+                base: '/api/vendors',
+                routes: {
+                    apply: 'POST /api/vendors/apply (requires auth)',
+                    profile: 'GET /api/vendors/profile (requires vendor auth)',
+                    updateProfile: 'PUT /api/vendors/profile (requires vendor auth)',
+                    dashboard: 'GET /api/vendors/dashboard (requires vendor auth)'
+                }
+            },
+            listings: {
+                base: '/api/listings',
+                routes: {
+                    getAll: 'GET /api/listings',
+                    create: 'POST /api/listings (requires vendor auth)',
+                    getById: 'GET /api/listings/:id',
+                    update: 'PUT /api/listings/:id (requires vendor auth)',
+                    delete: 'DELETE /api/listings/:id (requires vendor auth)',
+                    getVendorListings: 'GET /api/listings/vendor/my-listings (requires vendor auth)'
+                }
+            }
+        },
+        status: 'operational',
+        version: '1.0.0'
+    });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/listings', listingRoutes);
+
+// Root endpoint
+app.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'Welcome to VendorStreet API',
+        version: '1.0.0',
+        endpoints: {
+            health: '/health',
+            auth: '/api/auth',
+            vendors: '/api/vendors',
+            listings: '/api/listings'
+        },
+        documentation: {
+            auth: {
+                register: 'POST /api/auth/register',
+                login: 'POST /api/auth/login',
+                profile: 'GET /api/auth/profile (requires auth)'
+            },
+            vendors: {
+                apply: 'POST /api/vendors/apply (requires auth)',
+                profile: 'GET /api/vendors/profile (requires vendor auth)',
+                dashboard: 'GET /api/vendors/dashboard (requires vendor auth)'
+            },
+            listings: {
+                getAll: 'GET /api/listings',
+                create: 'POST /api/listings (requires vendor auth)',
+                getById: 'GET /api/listings/:id',
+                update: 'PUT /api/listings/:id (requires vendor auth)',
+                delete: 'DELETE /api/listings/:id (requires vendor auth)'
+            }
+        }
+    });
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -55,7 +140,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use('/{*any}', (req, res) => {
+app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
         message: 'Route not found'

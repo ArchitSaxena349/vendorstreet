@@ -55,4 +55,4 @@ inquirySchema.index({ buyerId: 1, createdAt: -1 });
 inquirySchema.index({ vendorId: 1, status: 1, createdAt: -1 });
 inquirySchema.index({ listingId: 1 });
 
-export default mongoose.model('Inquiry', inquirySchema);
+export default mongoose.models.Inquiry || mongoose.model('Inquiry', inquirySchema);

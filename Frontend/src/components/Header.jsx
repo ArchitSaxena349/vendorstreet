@@ -6,15 +6,31 @@ import {
   ChatBubbleLeftRightIcon,
   Bars3Icon,
   XMarkIcon,
-  BellIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
+import NotificationDropdown from './NotificationDropdown.jsx'
 
 const Header = ({ user, userRole, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [headerSearchQuery, setHeaderSearchQuery] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
+  
+  // Hide header search on products page since it has its own search
+  const shouldShowHeaderSearch = !location.pathname.startsWith('/products')
+
+  const handleHeaderSearch = (e) => {
+    e.preventDefault()
+    if (headerSearchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(headerSearchQuery.trim())}`)
+      setIsSearchOpen(false)
+      setHeaderSearchQuery('')
+    } else {
+      navigate('/products')
+      setIsSearchOpen(false)
+    }
+  }
 
   const handleLogout = () => {
     onLogout()
@@ -50,16 +66,20 @@ const Header = ({ user, userRole, onLogout }) => {
           </div>
 
           {/* Search Bar - Desktop */}
-          {/* <div className="hidden md:flex flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Search for food raw materials..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-              <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          {shouldShowHeaderSearch && (
+            <div className="hidden md:flex flex-1 max-w-lg mx-8">
+              <form onSubmit={handleHeaderSearch} className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search for food raw materials..."
+                  value={headerSearchQuery}
+                  onChange={(e) => setHeaderSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              </form>
             </div>
-          </div> */}
+          )}
 
           {/* Navigation Links - Desktop */}
           <nav className="hidden md:flex items-center space-x-8">
@@ -90,7 +110,8 @@ const Header = ({ user, userRole, onLogout }) => {
 
                 <Link 
                   to="/chat" 
-                  className="relative text-gray-700 hover:text-green-600"
+                  className="relative text-gray-700 hover:text-green-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Messages"
                 >
                   <ChatBubbleLeftRightIcon className="h-6 w-6" />
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
@@ -98,12 +119,7 @@ const Header = ({ user, userRole, onLogout }) => {
                   </span>
                 </Link>
 
-                <button className="relative text-gray-700 hover:text-green-600">
-                  <BellIcon className="h-6 w-6" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    2
-                  </span>
-                </button>
+                <NotificationDropdown user={user} />
 
                 <div className="flex items-center space-x-3">
                   <Link 
@@ -142,12 +158,14 @@ const Header = ({ user, userRole, onLogout }) => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="text-gray-700 hover:text-green-600"
-            >
-              <MagnifyingGlassIcon className="h-6 w-6" />
-            </button>
+            {shouldShowHeaderSearch && (
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="text-gray-700 hover:text-green-600"
+              >
+                <MagnifyingGlassIcon className="h-6 w-6" />
+              </button>
+            )}
             
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -163,16 +181,18 @@ const Header = ({ user, userRole, onLogout }) => {
         </div>
 
         {/* Mobile Search */}
-        {isSearchOpen && (
+        {shouldShowHeaderSearch && isSearchOpen && (
           <div className="md:hidden py-3 border-t border-gray-200">
-            <div className="relative">
+            <form onSubmit={handleHeaderSearch} className="relative">
               <input
                 type="text"
                 placeholder="Search for food raw materials..."
+                value={headerSearchQuery}
+                onChange={(e) => setHeaderSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
               <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
+            </form>
           </div>
         )}
 

@@ -112,4 +112,4 @@ vendorProfileSchema.index({ location: '2dsphere' });
 vendorProfileSchema.index({ 'businessAddress.city': 1 });
 vendorProfileSchema.index({ verificationStatus: 1 });
 
-export default mongoose.model('VendorProfile', vendorProfileSchema);
+export default mongoose.models.VendorProfile || mongoose.model('VendorProfile', vendorProfileSchema);

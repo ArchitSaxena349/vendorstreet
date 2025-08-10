@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   MagnifyingGlassIcon,
   ShieldCheckIcon,
@@ -11,6 +11,24 @@ import {
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('')
+  const navigate = useNavigate()
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      // Navigate to products page with search query
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
+    } else {
+      // If no search query, just go to products page
+      navigate('/products')
+    }
+  }
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch(e)
+    }
+  }
 
   const featuredCategories = [
     { name: 'Grains & Cereals', count: '250+ products', image: '/cereals.jpg' },
@@ -76,19 +94,23 @@ const Home = () => {
             
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-8">
-              <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
                   placeholder="Search for food raw materials, vendors, or categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   className="w-full bg-white px-6 py-4 pl-12 text-gray-900 rounded-full text-lg focus:ring-4 focus:ring-green-300 focus:outline-none"
                 />
                 <MagnifyingGlassIcon className="absolute left-4 top-4 h-6 w-6 text-gray-400" />
-                <button className="absolute right-2 top-2 bg-gray-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors">
+                <button 
+                  type="submit"
+                  className="absolute right-2 top-2 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors"
+                >
                   Search
                 </button>
-              </div>
+              </form>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
