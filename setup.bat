@@ -37,8 +37,22 @@ cd ..
 echo.
 echo Setup completed successfully!
 echo.
-echo To start the application:
-echo 1. Backend: cd backend && npm start
-echo 2. Frontend: cd Frontend && npm run dev
+echo Choose an option:
+echo 1. Start development environment (both servers)
+echo 2. Exit and start manually later
 echo.
-pause
+set /p choice="Enter your choice (1 or 2): "
+
+if "%choice%"=="1" (
+    echo.
+    echo Starting development environment...
+    cd ..
+    call dev.bat
+) else (
+    echo.
+    echo To start the application later:
+    echo 1. Development: dev.bat or npm run dev
+    echo 2. Production: cd backend && npm start
+    echo.
+    pause
+)
