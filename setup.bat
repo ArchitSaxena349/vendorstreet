@@ -46,7 +46,6 @@ set /p choice="Enter your choice (1 or 2): "
 if "%choice%"=="1" (
     echo.
     echo Starting development environment...
-    cd ..
     call dev.bat
 ) else (
     echo.
