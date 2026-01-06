@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { 
+import {
   PaperAirplaneIcon,
   PhoneIcon,
   VideoCameraIcon,
   EllipsisVerticalIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
+
+import { useSocket } from '../context/SocketContext'
 
 const Chat = ({ user }) => {
   const [conversations, setConversations] = useState([])
@@ -15,239 +17,191 @@ const Chat = ({ user }) => {
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
+  const socket = useSocket()
 
   useEffect(() => {
-    // Mock conversations
-    setConversations([
-      {
-        id: 1,
-        name: 'Fresh Spices Co.',
-        type: 'vendor',
-        lastMessage: 'Thank you for your order!',
-        timestamp: '2 min ago',
-        unread: 2,
-        avatar: '/api/placeholder/40/40',
-        online: true
-      },
-      {
-        id: 2,
-        name: 'Restaurant Paradise',
-        type: 'buyer',
-        lastMessage: 'When can you deliver?',
-        timestamp: '1 hour ago',
-        unread: 0,
-        avatar: '/api/placeholder/40/40',
-        online: false
-      },
-      {
-        id: 3,
-        name: 'Grain Masters Ltd.',
-        type: 'vendor',
-        lastMessage: 'Your rice order is ready',
-        timestamp: '3 hours ago',
-        unread: 1,
-        avatar: '/api/placeholder/40/40',
-        online: true
-      }
-    ])
-
-    // Set first conversation as active
-    setActiveChat(1)
-  }, [])
-
-  useEffect(() => {
-    // Initialize messages for all conversations
-    const initialMessages = {
-      1: [
-        {
-          id: 1,
-          senderId: 'vendor',
-          senderName: 'Fresh Spices Co.',
-          message: 'Hello! Thank you for your interest in our turmeric powder.',
-          timestamp: '10:30 AM',
-          isOwn: false
-        },
-        {
-          id: 2,
-          senderId: user?.id,
-          senderName: user?.name || 'You',
-          message: 'Hi! Can you tell me more about the quality and pricing?',
-          timestamp: '10:32 AM',
-          isOwn: true
-        },
-        {
-          id: 3,
-          senderId: 'vendor',
-          senderName: 'Fresh Spices Co.',
-          message: 'Sure! Our turmeric is sourced directly from Kerala farms. It has high curcumin content and is lab tested.',
-          timestamp: '10:35 AM',
-          isOwn: false
-        },
-        {
-          id: 4,
-          senderId: user?.id,
-          senderName: user?.name || 'You',
-          message: 'That sounds great! What\'s the minimum order quantity?',
-          timestamp: '10:36 AM',
-          isOwn: true
-        },
-        {
-          id: 5,
-          senderId: 'vendor',
-          senderName: 'Fresh Spices Co.',
-          message: 'The minimum order is 5kg. For bulk orders above 50kg, we offer special pricing.',
-          timestamp: '10:38 AM',
-          isOwn: false
-        }
-      ],
-      2: [
-        {
-          id: 1,
-          senderId: 'buyer',
-          senderName: 'Restaurant Paradise',
-          message: 'Hi! I need fresh vegetables for my restaurant.',
-          timestamp: '9:15 AM',
-          isOwn: false
-        },
-        {
-          id: 2,
-          senderId: user?.id,
-          senderName: user?.name || 'You',
-          message: 'Hello! What quantities do you need?',
-          timestamp: '9:20 AM',
-          isOwn: true
-        },
-        {
-          id: 3,
-          senderId: 'buyer',
-          senderName: 'Restaurant Paradise',
-          message: 'When can you deliver?',
-          timestamp: '9:25 AM',
-          isOwn: false
-        }
-      ],
-      3: [
-        {
-          id: 1,
-          senderId: 'vendor',
-          senderName: 'Grain Masters Ltd.',
-          message: 'Your rice order is ready for pickup!',
-          timestamp: '8:45 AM',
-          isOwn: false
-        },
-        {
-          id: 2,
-          senderId: user?.id,
-          senderName: user?.name || 'You',
-          message: 'Great! What time can I collect it?',
-          timestamp: '8:50 AM',
-          isOwn: true
-        },
-        {
-          id: 3,
-          senderId: 'vendor',
-          senderName: 'Grain Masters Ltd.',
-          message: 'Anytime between 10 AM to 6 PM. Please bring your order confirmation.',
-          timestamp: '8:52 AM',
-          isOwn: false
-        }
-      ]
-    }
-    setAllMessages(initialMessages)
-    setIsLoading(false)
+    fetchConversations()
+    // Reduced polling frequency as fallback
+    const interval = setInterval(fetchConversations, 30000)
+    return () => clearInterval(interval)
   }, [user])
+
+  useEffect(() => {
+    if (activeChat) {
+      fetchMessages(activeChat)
+      // Reduced polling frequency as fallback
+      const interval = setInterval(() => fetchMessages(activeChat), 15000)
+      return () => clearInterval(interval)
+    }
+  }, [activeChat])
+
+  // Socket.io Event Listeners
+  useEffect(() => {
+    if (!socket) return
+
+    socket.on('new_message', (message) => {
+      // Find which conversation this message belongs to
+      // In a real app, you might want to check if the message matches the current active chat
+      const recipientId = user.id === message.senderId ? message.recipientId : message.senderId
+
+      // We need to identify the chat/conversation ID. 
+      // Since our message object from backend might not satisfy all frontend needs immediately,
+      // and we store messages by conversation ID (activeChat), we need to find the conversation.
+      // However, the backend emits 'new_message' with message data.
+
+      // A simpler approach for this demo:
+      // If the message belongs to the ACTIVE chat, append it.
+      // We need to know who sent it.
+
+      setAllMessages(prev => {
+        // This is a bit tricky because we key by Conversation ID, but the message tells us Sender/Receiver.
+        // We need to find the conversation ID that matches this pair.
+        // For now, let's trigger a refresh or use the conversation_updated event to guide us.
+        // BUT, for immediate UI feedback in the active window:
+
+        const isForCurrentChat = activeChat &&
+          conversations.find(c => c.id === activeChat && (c.otherUserId === message.senderId || user.id === message.senderId))
+
+        if (isForCurrentChat) {
+          return {
+            ...prev,
+            [activeChat]: [...(prev[activeChat] || []), {
+              id: message._id || 'socket-' + Date.now(),
+              senderId: message.senderId,
+              message: message.content, // Backend sends 'content', frontend expects 'message' in some places or vice versa? verified: frontend uses .message
+              timestamp: message.timestamp,
+              isOwn: message.senderId === user.id
+            }]
+          }
+        }
+        return prev
+      })
+    })
+
+    socket.on('conversation_updated', (updatedConv) => {
+      setConversations(prev => {
+        const exists = prev.find(c => c.id === updatedConv.id)
+        if (exists) {
+          return prev.map(c => c.id === updatedConv.id ? {
+            ...c,
+            lastMessage: updatedConv.lastMessage,
+            timestamp: updatedConv.timestamp,
+            unread: activeChat === updatedConv.id ? 0 : updatedConv.unread // Don't increment unread if chat is open
+          } : c)
+        } else {
+          // New conversation started by someone else
+          // We'd need to fetch it or construct it. For now, fetch all.
+          fetchConversations()
+          return prev
+        }
+      })
+    })
+
+    return () => {
+      socket.off('new_message')
+      socket.off('conversation_updated')
+    }
+  }, [socket, activeChat, conversations, user])
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom()
   }, [allMessages, activeChat, isTyping])
 
+  const fetchConversations = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch('http://localhost:5000/api/chat/conversations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const result = await response.json()
+      if (result.success) {
+        setConversations(result.data)
+        setIsLoading(false)
+
+        // If no active chat and we have conversations, select the first one
+        // Only do this on initial load to avoid jumping
+        if (!activeChat && result.data.length > 0 && isLoading) {
+          setActiveChat(result.data[0].id)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error)
+      setIsLoading(false)
+    }
+  }
+
+  const fetchMessages = async (chatId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/api/chat/${chatId}/messages`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const result = await response.json()
+      if (result.success) {
+        setAllMessages(prev => ({
+          ...prev,
+          [chatId]: result.data
+        }))
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+    }
+  }
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (newMessage.trim() && activeChat) {
-      const currentMessages = allMessages[activeChat] || []
-      const message = {
-        id: currentMessages.length + 1,
-        senderId: user?.id,
-        senderName: user?.name || 'You',
-        message: newMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isOwn: true
-      }
-      
-      // Update messages for the active conversation
-      setAllMessages(prev => ({
-        ...prev,
-        [activeChat]: [...currentMessages, message]
-      }))
-      
-      // Update conversation's last message
-      setConversations(prev => prev.map(conv => 
-        conv.id === activeChat 
-          ? { ...conv, lastMessage: newMessage, timestamp: 'now' }
-          : conv
-      ))
-      
-      setNewMessage('')
-      
-      // Simulate typing indicator and auto-response
-      setIsTyping(true)
-      setTimeout(() => {
-        setIsTyping(false)
-        simulateResponse()
-      }, 2000)
-    }
-  }
+      try {
+        const token = localStorage.getItem('token')
+        // Optimistic update
+        const currentMessages = allMessages[activeChat] || []
+        const optimisticMessage = {
+          id: 'temp-' + Date.now(),
+          senderId: user?.id,
+          senderName: user?.name,
+          message: newMessage,
+          timestamp: new Date().toISOString(), // Use ISO for consistency
+          isOwn: true
+        }
 
-  const simulateResponse = () => {
-    if (activeChat) {
-      const activeConversation = conversations.find(c => c.id === activeChat)
-      if (!activeConversation) return
+        setAllMessages(prev => ({
+          ...prev,
+          [activeChat]: [...currentMessages, optimisticMessage]
+        }))
+        setNewMessage('')
 
-      const responses = [
-        "Thank you for your message! I'll get back to you shortly.",
-        "That's a great question. Let me check and respond.",
-        "I appreciate your interest. Can you provide more details?",
-        "Sure, I can help you with that.",
-        "Let me check our current stock and pricing for you.",
-        "I'll send you the details via WhatsApp for faster communication.",
-        "That sounds perfect! When would you like to proceed?",
-        "Let me prepare a quote for you right away.",
-        "I have some great options that might interest you.",
-        "Thanks for reaching out! I'm here to help."
-      ]
-      
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)]
-      
-      const currentMessages = allMessages[activeChat] || []
-      const responseMessage = {
-        id: Date.now(), // Use timestamp for unique ID
-        senderId: 'other',
-        senderName: activeConversation.name,
-        message: randomResponse,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isOwn: false
+        // Find recipient ID
+        const conversation = conversations.find(c => c.id === activeChat)
+        if (!conversation) return // Should not happen
+
+        const response = await fetch('http://localhost:5000/api/chat/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            recipientId: conversation.otherUserId,
+            content: optimisticMessage.message
+          })
+        })
+
+        const result = await response.json()
+        if (result.success) {
+          // Replace optimistic message with real one or just refetch
+          fetchMessages(activeChat)
+          fetchConversations() // Update last message in list
+        }
+      } catch (error) {
+        console.error('Error sending message:', error)
+        // Ideally revert optimistic update here
       }
-      
-      setAllMessages(prev => ({
-        ...prev,
-        [activeChat]: [...(prev[activeChat] || []), responseMessage]
-      }))
-      
-      // Update conversation's last message and timestamp
-      setConversations(prev => prev.map(conv => 
-        conv.id === activeChat 
-          ? { 
-              ...conv, 
-              lastMessage: randomResponse.length > 50 ? randomResponse.substring(0, 50) + '...' : randomResponse,
-              timestamp: 'now',
-              unread: 0 // Mark as read since we're in the conversation
-            }
-          : conv
-      ))
     }
   }
 
@@ -294,15 +248,14 @@ const Chat = ({ user }) => {
                   onClick={() => {
                     setActiveChat(conversation.id)
                     // Mark conversation as read when opened
-                    setConversations(prev => prev.map(conv => 
-                      conv.id === conversation.id 
+                    setConversations(prev => prev.map(conv =>
+                      conv.id === conversation.id
                         ? { ...conv, unread: 0 }
                         : conv
                     ))
                   }}
-                  className={`flex items-center p-4 cursor-pointer hover:bg-gray-50 ${
-                    activeChat === conversation.id ? 'bg-green-50 border-r-2 border-green-500' : ''
-                  }`}
+                  className={`flex items-center p-4 cursor-pointer hover:bg-gray-50 ${activeChat === conversation.id ? 'bg-green-50 border-r-2 border-green-500' : ''
+                    }`}
                 >
                   <div className="relative">
                     <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
@@ -313,7 +266,7 @@ const Chat = ({ user }) => {
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-medium text-gray-900">{conversation.name}</h3>
-                      <span className="text-xs text-gray-500">{conversation.timestamp}</span>
+                      <span className="text-xs text-gray-500">{new Date(conversation.timestamp).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-600 truncate">{conversation.lastMessage}</p>
@@ -324,11 +277,10 @@ const Chat = ({ user }) => {
                       )}
                     </div>
                     <div className="mt-1">
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        conversation.type === 'vendor' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-purple-100 text-purple-800'
-                      }`}>
+                      <span className={`text-xs px-2 py-1 rounded-full ${conversation.type === 'vendor'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-purple-100 text-purple-800'
+                        }`}>
                         {conversation.type}
                       </span>
                     </div>
@@ -379,21 +331,19 @@ const Chat = ({ user }) => {
                       key={message.id}
                       className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.isOwn
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-200 text-gray-900'
-                      }`}>
-                        <p className="text-sm">{message.message}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.isOwn ? 'text-green-100' : 'text-gray-500'
+                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.isOwn
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-900'
                         }`}>
-                          {message.timestamp}
+                        <p className="text-sm">{message.message}</p>
+                        <p className={`text-xs mt-1 ${message.isOwn ? 'text-green-100' : 'text-gray-500'
+                          }`}>
+                          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>
                   ))}
-                  
+
                   {/* Typing Indicator */}
                   {isTyping && (
                     <div className="flex justify-start">
@@ -406,7 +356,7 @@ const Chat = ({ user }) => {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Scroll anchor */}
                   <div ref={messagesEndRef} />
                 </div>

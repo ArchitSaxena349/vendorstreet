@@ -38,7 +38,7 @@ const createListing = async (req, res) => {
 
     } catch (error) {
         console.error('Create listing error:', error);
-        
+
         if (error.name === 'ValidationError') {
             const validationErrors = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
@@ -110,8 +110,8 @@ const getListings = async (req, res) => {
             .limit(Number(limit));
 
         // Filter out listings where vendor doesn't match city filter
-        const filteredListings = city ? 
-            listings.filter(listing => listing.vendorId) : 
+        const filteredListings = city ?
+            listings.filter(listing => listing.vendorId) :
             listings;
 
         const total = await Listing.countDocuments(query);
@@ -187,9 +187,9 @@ const updateListing = async (req, res) => {
         }
 
         // Find listing and verify ownership
-        const listing = await Listing.findOne({ 
-            _id: id, 
-            vendorId: vendorProfile._id 
+        const listing = await Listing.findOne({
+            _id: id,
+            vendorId: vendorProfile._id
         });
 
         if (!listing) {
@@ -201,7 +201,7 @@ const updateListing = async (req, res) => {
 
         // Update listing
         const updates = req.body;
-        
+
         // Reset approval status if content changes
         if (updates.title || updates.description || updates.price) {
             updates.status = 'pending';
@@ -241,9 +241,9 @@ const deleteListing = async (req, res) => {
         }
 
         // Find and delete listing
-        const listing = await Listing.findOneAndDelete({ 
-            _id: id, 
-            vendorId: vendorProfile._id 
+        const listing = await Listing.findOneAndDelete({
+            _id: id,
+            vendorId: vendorProfile._id
         });
 
         if (!listing) {
@@ -319,11 +319,79 @@ const getVendorListings = async (req, res) => {
     }
 };
 
+// Admin: Get pending listings
+const getPendingListings = async (req, res) => {
+    try {
+        const listings = await Listing.find({ status: 'pending' })
+            .populate('vendorId', 'companyName businessAddress rating')
+            .populate('categoryId', 'name')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: listings
+        });
+    } catch (error) {
+        console.error('Get pending listings error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch pending listings"
+        });
+    }
+};
+
+// Admin: Verify listing
+const verifyListing = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body; // 'approved' or 'rejected'
+
+        if (!['approved', 'rejected'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid status"
+            });
+        }
+
+        const listing = await Listing.findByIdAndUpdate(
+            id,
+            {
+                status,
+                approvedAt: status === 'approved' ? new Date() : null,
+                approvedBy: req.user.userId
+            },
+            { new: true }
+        );
+
+        if (!listing) {
+            return res.status(404).json({
+                success: false,
+                message: "Listing not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Listing ${status} successfully`,
+            data: listing
+        });
+
+    } catch (error) {
+        console.error('Verify listing error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to verify listing"
+        });
+    }
+};
+
 export {
     createListing,
     getListings,
     getListingById,
     updateListing,
     deleteListing,
-    getVendorListings
+    getVendorListings,
+    getPendingListings,
+    verifyListing
 };

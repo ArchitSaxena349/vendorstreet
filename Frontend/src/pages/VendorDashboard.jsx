@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { 
+import {
   PlusIcon,
   EyeIcon,
   PencilIcon,
@@ -11,7 +11,7 @@ import {
   CurrencyRupeeIcon,
   ShoppingBagIcon,
   UsersIcon,
-//   TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
 
@@ -21,84 +21,68 @@ const VendorDashboard = ({ user }) => {
   const [analytics, setAnalytics] = useState({})
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setListings([
-      {
-        id: 1,
-        name: 'Organic Basmati Rice',
-        category: 'Grains',
-        price: 850,
-        unit: 'per 25kg bag',
-        stock: 45,
-        status: 'approved',
-        views: 234,
-        orders: 12,
-        image: '/api/placeholder/100/100'
-      },
-      {
-        id: 2,
-        name: 'Premium Turmeric Powder',
-        category: 'Spices',
-        price: 320,
-        unit: 'per kg',
-        stock: 0,
-        status: 'pending',
-        views: 156,
-        orders: 8,
-        image: '/api/placeholder/100/100'
-      },
-      {
-        id: 3,
-        name: 'Fresh Red Chili Powder',
-        category: 'Spices',
-        price: 280,
-        unit: 'per kg',
-        stock: 25,
-        status: 'rejected',
-        views: 89,
-        orders: 3,
-        image: '/api/placeholder/100/100'
-      }
-    ])
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const headers = { 'Authorization': `Bearer ${token}` }
 
-    setOrders([
-      {
-        id: 'ORD-001',
-        buyer: 'Fresh Foods Restaurant',
-        product: 'Organic Basmati Rice',
-        quantity: 10,
-        total: 8500,
-        status: 'completed',
-        date: '2025-01-25'
-      },
-      {
-        id: 'ORD-002',
-        buyer: 'Spice Corner',
-        product: 'Premium Turmeric Powder',
-        quantity: 5,
-        total: 1600,
-        status: 'processing',
-        date: '2025-01-24'
-      },
-      {
-        id: 'ORD-003',
-        buyer: 'Hotel Paradise',
-        product: 'Organic Basmati Rice',
-        quantity: 20,
-        total: 17000,
-        status: 'shipped',
-        date: '2025-01-23'
-      }
-    ])
+        // Fetch Dashboard Stats & Listings
+        const dashboardRes = await fetch('http://localhost:5000/api/vendors/dashboard', { headers })
+        const dashboardResult = await dashboardRes.json()
 
-    setAnalytics({
-      totalRevenue: 125000,
-      totalOrders: 45,
-      totalProducts: 8,
-      totalViews: 2340,
-      monthlyGrowth: 15.5,
-      conversionRate: 3.2
-    })
+        // Fetch Vendor Orders
+        const ordersRes = await fetch('http://localhost:5000/api/orders/vendor-orders', { headers })
+        const ordersResult = await ordersRes.json()
+
+        let recentOrders = []
+        if (ordersResult.success) {
+          recentOrders = ordersResult.data
+          setOrders(recentOrders.map(order => ({
+            id: order._id, // Keep full ID for link
+            displayId: order._id.slice(-6).toUpperCase(),
+            buyer: `${order.buyer.firstName} ${order.buyer.lastName}`,
+            product: order.products[0].listing.title, // Simplified for UI
+            quantity: order.products[0].quantity,
+            date: new Date(order.createdAt).toLocaleDateString(),
+            total: order.totalAmount,
+            status: order.status
+          })))
+        }
+
+        if (dashboardResult.success) {
+          const { recentListings, statistics } = dashboardResult.data
+
+          // Map backend listings to frontend format
+          const formattedListings = recentListings.map(item => ({
+            id: item._id,
+            name: item.title,
+            category: item.categoryId?.name || 'Uncategorized',
+            price: item.price,
+            unit: item.unit,
+            stock: item.stockQuantity,
+            status: item.status,
+            views: item.views || 0,
+            orders: 0, // Could be calculated if we map orders to products
+            image: item.imageUrl ? `http://localhost:5000${item.imageUrl}` : 'https://via.placeholder.com/100'
+          }))
+          setListings(formattedListings)
+
+          // Map analytics
+          setAnalytics({
+            totalRevenue: recentOrders.reduce((sum, order) => sum + order.totalAmount, 0), // Calculate real revenue
+            totalOrders: recentOrders.length,
+            totalProducts: statistics.totalListings || 0,
+            totalViews: 0,
+            activeListings: statistics.activeListings,
+            pendingListings: statistics.pendingListings
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+      }
+    }
+
+    fetchDashboardData()
   }, [])
 
   const getStatusIcon = (status) => {
@@ -132,31 +116,31 @@ const VendorDashboard = ({ user }) => {
   }
 
   const quickStats = [
-    { 
-      label: 'Total Revenue', 
-      value: `₹${analytics.totalRevenue?.toLocaleString()}`, 
-      change: '+15.5%', 
+    {
+      label: 'Total Revenue',
+      value: `₹${analytics.totalRevenue?.toLocaleString()}`,
+      change: '+15.5%',
       color: 'text-green-600',
       icon: CurrencyRupeeIcon
     },
-    { 
-      label: 'Total Orders', 
-      value: analytics.totalOrders, 
-      change: '+23%', 
+    {
+      label: 'Total Orders',
+      value: analytics.totalOrders,
+      change: '+23%',
       color: 'text-blue-600',
       icon: ShoppingBagIcon
     },
-    { 
-      label: 'Total Products', 
-      value: analytics.totalProducts, 
-      change: '+12%', 
+    {
+      label: 'Total Products',
+      value: analytics.totalProducts,
+      change: '+12%',
       color: 'text-purple-600',
       icon: ChartBarIcon
     },
-    { 
-      label: 'Profile Views', 
-      value: analytics.totalViews?.toLocaleString(), 
-      change: '+8%', 
+    {
+      label: 'Profile Views',
+      value: analytics.totalViews?.toLocaleString(),
+      change: '+8%',
       color: 'text-orange-600',
       icon: EyeIcon
     }
@@ -176,8 +160,8 @@ const VendorDashboard = ({ user }) => {
                 Manage your products, orders, and business performance.
               </p>
             </div>
-            <Link 
-              to="/add-product" 
+            <Link
+              to="/add-product"
               className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center space-x-2"
             >
               <PlusIcon className="h-5 w-5" />
@@ -227,8 +211,8 @@ const VendorDashboard = ({ user }) => {
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-gray-900">Your Products</h2>
-                  <Link 
-                    to="/manage-products" 
+                  <Link
+                    to="/manage-products"
                     className="text-green-600 hover:text-green-700 text-sm font-medium"
                   >
                     Manage all
@@ -281,8 +265,8 @@ const VendorDashboard = ({ user }) => {
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
-                  <Link 
-                    to="/orders" 
+                  <Link
+                    to="/orders"
                     className="text-green-600 hover:text-green-700 text-sm font-medium"
                   >
                     View all
@@ -295,7 +279,7 @@ const VendorDashboard = ({ user }) => {
                     <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <div className="flex items-center space-x-2 mb-1">
-                          <p className="font-medium text-gray-900">Order #{order.id}</p>
+                          <p className="font-medium text-gray-900">Order #{order.displayId}</p>
                           {getStatusBadge(order.status)}
                         </div>
                         <p className="text-sm text-gray-600">{order.buyer}</p>
@@ -331,9 +315,8 @@ const VendorDashboard = ({ user }) => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Verification</span>
-                  <span className={`text-sm font-medium ${
-                    user?.verified ? 'text-green-600' : 'text-yellow-600'
-                  }`}>
+                  <span className={`text-sm font-medium ${user?.verified ? 'text-green-600' : 'text-yellow-600'
+                    }`}>
                     {user?.verified ? 'Verified' : 'Pending'}
                   </span>
                 </div>
@@ -348,10 +331,10 @@ const VendorDashboard = ({ user }) => {
                   <span className="text-sm text-gray-900">4.5/5 (24 reviews)</span>
                 </div>
               </div>
-              
+
               <div className="mt-4 pt-4 border-t">
-                <Link 
-                  to="/profile" 
+                <Link
+                  to="/profile"
                   className="w-full bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
                 >
                   Update Profile
@@ -363,29 +346,29 @@ const VendorDashboard = ({ user }) => {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-2">
-                <Link 
-                  to="/add-product" 
+                <Link
+                  to="/add-product"
                   className="w-full flex items-center space-x-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <PlusIcon className="h-4 w-4" />
                   <span>Add New Product</span>
                 </Link>
-                <Link 
-                  to="/inventory" 
+                <Link
+                  to="/inventory"
                   className="w-full flex items-center space-x-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <ChartBarIcon className="h-4 w-4" />
                   <span>Manage Inventory</span>
                 </Link>
-                <Link 
-                  to="/analytics" 
+                <Link
+                  to="/analytics"
                   className="w-full flex items-center space-x-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                 >
-                  <TrendingUpIcon className="h-4 w-4" />
+                  <ArrowTrendingUpIcon className="h-4 w-4" />
                   <span>View Analytics</span>
                 </Link>
-                <Link 
-                  to="/chat" 
+                <Link
+                  to="/chat"
                   className="w-full flex items-center space-x-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <UsersIcon className="h-4 w-4" />

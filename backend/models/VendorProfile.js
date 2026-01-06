@@ -20,7 +20,7 @@ const vendorProfileSchema = new mongoose.Schema({
         type: String,
         sparse: true,
         validate: {
-            validator: function(v) {
+            validator: function (v) {
                 return !v || /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(v);
             },
             message: 'Please provide a valid GST number'
@@ -30,7 +30,7 @@ const vendorProfileSchema = new mongoose.Schema({
         type: String,
         required: [true, 'FSSAI license is required'],
         validate: {
-            validator: function(v) {
+            validator: function (v) {
                 return /^[0-9]{14}$/.test(v);
             },
             message: 'FSSAI license must be 14 digits'
@@ -39,15 +39,18 @@ const vendorProfileSchema = new mongoose.Schema({
     fssaiDocumentUrl: {
         type: String
     },
+    businessProofUrl: {
+        type: String
+    },
     businessAddress: {
         street: { type: String, required: true },
         city: { type: String, required: true },
         state: { type: String, required: true },
-        pincode: { 
-            type: String, 
+        pincode: {
+            type: String,
             required: true,
             validate: {
-                validator: function(v) {
+                validator: function (v) {
                     return /^[0-9]{6}$/.test(v);
                 },
                 message: 'Pincode must be 6 digits'

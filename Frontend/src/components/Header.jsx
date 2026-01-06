@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { 
-  UserIcon, 
-  ShoppingCartIcon, 
+import {
+  UserIcon,
   ChatBubbleLeftRightIcon,
   Bars3Icon,
   XMarkIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  ShoppingCartIcon
 } from '@heroicons/react/24/outline'
 import NotificationDropdown from './NotificationDropdown.jsx'
+import Cart from './Cart.jsx'
+import { useCart } from '../context/CartContext'
 
 const Header = ({ user, userRole, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -16,7 +18,33 @@ const Header = ({ user, userRole, onLogout }) => {
   const [headerSearchQuery, setHeaderSearchQuery] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
-  
+  const { toggleCart, cartCount } = useCart()
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadMessages()
+      const interval = setInterval(fetchUnreadMessages, 10000)
+      return () => clearInterval(interval)
+    }
+  }, [user])
+
+  const fetchUnreadMessages = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://localhost:5000/api/chat/conversations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const result = await response.json()
+      if (result.success) {
+        const count = result.data.reduce((acc, conv) => acc + (conv.unread || 0), 0)
+        setUnreadMessageCount(count)
+      }
+    } catch (error) {
+      console.error('Error fetching unread messages:', error)
+    }
+  }
+
   // Hide header search on products page since it has its own search
   const shouldShowHeaderSearch = !location.pathname.startsWith('/products')
 
@@ -83,53 +111,55 @@ const Header = ({ user, userRole, onLogout }) => {
 
           {/* Navigation Links - Desktop */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/products" 
+            <Link
+              to="/products"
               className={`text-sm font-medium ${isActive('/products') ? 'text-green-600' : 'text-gray-700 hover:text-green-600'}`}
             >
               Products
             </Link>
-            
+
             {user ? (
               <>
-                <Link 
-                  to={getDashboardLink()} 
+                <Link
+                  to={getDashboardLink()}
                   className={`text-sm font-medium ${isActive(getDashboardLink()) ? 'text-green-600' : 'text-gray-700 hover:text-green-600'}`}
                 >
                   Dashboard
                 </Link>
-                
+
                 {userRole === 'buyer' && (
-                  <Link 
-                    to="/vendor-application" 
+                  <Link
+                    to="/vendor-application"
                     className="text-sm font-medium text-gray-700 hover:text-green-600"
                   >
                     Become Vendor
                   </Link>
                 )}
 
-                <Link 
-                  to="/chat" 
+                <Link
+                  to="/chat"
                   className="relative text-gray-700 hover:text-green-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   title="Messages"
                 >
                   <ChatBubbleLeftRightIcon className="h-6 w-6" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    3
-                  </span>
+                  {unreadMessageCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {unreadMessageCount}
+                    </span>
+                  )}
                 </Link>
 
                 <NotificationDropdown user={user} />
 
                 <div className="flex items-center space-x-3">
-                  <Link 
-                    to="/profile" 
+                  <Link
+                    to="/profile"
                     className="flex items-center space-x-2 text-gray-700 hover:text-green-600"
                   >
                     <UserIcon className="h-6 w-6" />
                     <span className="text-sm font-medium">{user.name || 'Profile'}</span>
                   </Link>
-                  
+
                   <button
                     onClick={handleLogout}
                     className="text-sm font-medium text-red-600 hover:text-red-800"
@@ -137,17 +167,29 @@ const Header = ({ user, userRole, onLogout }) => {
                     Logout
                   </button>
                 </div>
+                <button
+                  onClick={toggleCart}
+                  className="relative text-gray-700 hover:text-green-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Cart"
+                >
+                  <ShoppingCartIcon className="h-6 w-6" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="text-sm font-medium text-gray-700 hover:text-green-600"
                 >
                   Login
                 </Link>
-                <Link 
-                  to="/register" 
+                <Link
+                  to="/register"
                   className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
                 >
                   Sign Up
@@ -166,7 +208,7 @@ const Header = ({ user, userRole, onLogout }) => {
                 <MagnifyingGlassIcon className="h-6 w-6" />
               </button>
             )}
-            
+
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700 hover:text-green-600"
@@ -200,27 +242,27 @@ const Header = ({ user, userRole, onLogout }) => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
-              <Link 
-                to="/products" 
+              <Link
+                to="/products"
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50 rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
               </Link>
-              
+
               {user ? (
                 <>
-                  <Link 
-                    to={getDashboardLink()} 
+                  <Link
+                    to={getDashboardLink()}
                     className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
-                  
+
                   {userRole === 'buyer' && (
-                    <Link 
-                      to="/vendor-application" 
+                    <Link
+                      to="/vendor-application"
                       className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50 rounded-md"
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -228,22 +270,22 @@ const Header = ({ user, userRole, onLogout }) => {
                     </Link>
                   )}
 
-                  <Link 
-                    to="/chat" 
+                  <Link
+                    to="/chat"
                     className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Messages
                   </Link>
 
-                  <Link 
-                    to="/profile" 
+                  <Link
+                    to="/profile"
                     className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Profile
                   </Link>
-                  
+
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:text-red-800 hover:bg-gray-50 rounded-md"
@@ -253,15 +295,15 @@ const Header = ({ user, userRole, onLogout }) => {
                 </>
               ) : (
                 <>
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Login
                   </Link>
-                  <Link 
-                    to="/register" 
+                  <Link
+                    to="/register"
                     className="block px-3 py-2 text-base font-medium bg-green-600 text-white hover:bg-green-700 rounded-md"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -289,6 +331,7 @@ const Header = ({ user, userRole, onLogout }) => {
           </div>
         </div>
       )}
+      <Cart />
     </header>
   )
 }

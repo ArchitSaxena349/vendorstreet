@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/user.js';
+import User from '../models/User.js';
 import VendorProfile from '../models/VendorProfile.js';
 import Document from '../models/Document.js';
 import { sendEmail } from '../utils/emailService.js';
@@ -89,7 +89,7 @@ const register = async (req, res) => {
 
     } catch (error) {
         console.error('Registration error:', error);
-        
+
         if (error.name === 'ValidationError') {
             const validationErrors = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
@@ -210,10 +210,10 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const { firstName, lastName, phone } = req.body;
-        
+
         // Prepare update data
         const updateData = { firstName, lastName, phone };
-        
+
         // Handle profile image upload if present
         if (req.file) {
             // In a real application, you would upload to cloud storage (AWS S3, Cloudinary, etc.)
@@ -243,7 +243,7 @@ const updateProfile = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Profile updated successfully",
-            data: { 
+            data: {
                 user,
                 vendorProfile
             }
@@ -251,7 +251,7 @@ const updateProfile = async (req, res) => {
 
     } catch (error) {
         console.error('Update profile error:', error);
-        
+
         if (error.name === 'ValidationError') {
             const validationErrors = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
@@ -338,7 +338,7 @@ const updateVendorProfile = async (req, res) => {
 
     } catch (error) {
         console.error('Update vendor profile error:', error);
-        
+
         if (error.name === 'ValidationError') {
             const validationErrors = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
@@ -376,9 +376,9 @@ const uploadProfileImage = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Profile image updated successfully",
-            data: { 
+            data: {
                 user,
-                profileImageUrl 
+                profileImageUrl
             }
         });
 
@@ -410,13 +410,13 @@ const uploadDocument = async (req, res) => {
         }
 
         // Check if document type already exists for this user
-        const existingDocument = await Document.findOne({ 
-            userId: req.user.userId, 
-            type: documentType 
+        const existingDocument = await Document.findOne({
+            userId: req.user.userId,
+            type: documentType
         });
 
         const documentUrl = `/uploads/documents/${req.file.filename}`;
-        
+
         const documentData = {
             userId: req.user.userId,
             type: documentType,

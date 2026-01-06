@@ -12,119 +12,76 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline'
 
+import { useSocket } from '../context/SocketContext'
+
 const Notifications = ({ user }) => {
   const [notifications, setNotifications] = useState([])
   const [filteredNotifications, setFilteredNotifications] = useState([])
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
+  const socket = useSocket()
+
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch('http://localhost:5000/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const result = await response.json()
+      if (result.success) {
+        setNotifications(result.data.map(n => ({
+          ...n,
+          date: new Date(n.timestamp), // Ensure date object
+          icon: getIconForType(n.type),
+          color: getColorForType(n.type).text,
+          bgColor: getColorForType(n.type).bg
+        })))
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    // Mock notifications data
-    const mockNotifications = [
-      {
-        id: 1,
-        type: 'order',
-        title: 'Order Shipped',
-        message: 'Your order #VS2024002 has been shipped and is on the way. Expected delivery: Tomorrow',
-        timestamp: '2 minutes ago',
-        date: new Date(Date.now() - 2 * 60 * 1000),
-        read: false,
-        icon: TruckIcon,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100',
-        link: '/orders',
-        priority: 'high'
-      },
-      {
-        id: 2,
-        type: 'message',
-        title: 'New Message from Fresh Spices Co.',
-        message: 'You have received a new message about your turmeric powder inquiry. They have provided detailed pricing information.',
-        timestamp: '5 minutes ago',
-        date: new Date(Date.now() - 5 * 60 * 1000),
-        read: false,
-        icon: ChatBubbleLeftRightIcon,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        link: '/chat',
-        priority: 'medium'
-      },
-      {
-        id: 3,
-        type: 'order',
-        title: 'Order Delivered Successfully',
-        message: 'Your order #VS2024001 has been successfully delivered to your address. Please confirm receipt.',
-        timestamp: '1 hour ago',
-        date: new Date(Date.now() - 60 * 60 * 1000),
-        read: true,
-        icon: CheckIcon,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        link: '/orders',
-        priority: 'medium'
-      },
-      {
-        id: 4,
-        type: 'alert',
-        title: 'Stock Alert - Turmeric Powder',
-        message: 'The product you favorited is running low in stock. Only 5 units left. Order now to avoid disappointment.',
-        timestamp: '2 hours ago',
-        date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        read: true,
-        icon: ExclamationTriangleIcon,
-        color: 'text-yellow-600',
-        bgColor: 'bg-yellow-100',
-        link: '/products',
-        priority: 'low'
-      },
-      {
-        id: 5,
-        type: 'order',
-        title: 'New Order Received',
-        message: 'You have received a new order for Organic Basmati Rice (25kg). Order value: ₹2,125',
-        timestamp: '3 hours ago',
-        date: new Date(Date.now() - 3 * 60 * 60 * 1000),
-        read: true,
-        icon: ShoppingCartIcon,
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100',
-        link: '/orders',
-        priority: 'high'
-      },
-      {
-        id: 6,
-        type: 'message',
-        title: 'Message from Grain Masters Ltd.',
-        message: 'Your inquiry about bulk wheat flour pricing has been answered. Special discount available for orders above 100kg.',
-        timestamp: '5 hours ago',
-        date: new Date(Date.now() - 5 * 60 * 60 * 1000),
-        read: true,
-        icon: ChatBubbleLeftRightIcon,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        link: '/chat',
-        priority: 'medium'
-      },
-      {
-        id: 7,
-        type: 'alert',
-        title: 'Price Drop Alert',
-        message: 'Good news! The price of Red Chili Powder in your favorites has dropped by 15%. Now available at ₹238/kg.',
-        timestamp: '1 day ago',
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        read: true,
-        icon: ExclamationTriangleIcon,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        link: '/favorites',
-        priority: 'medium'
-      }
-    ]
-
-    setNotifications(mockNotifications)
-    setFilteredNotifications(mockNotifications)
-    setLoading(false)
+    fetchNotifications()
+    // Poll for new notifications as fallback
+    const interval = setInterval(fetchNotifications, 60000)
+    return () => clearInterval(interval)
   }, [])
+
+  // Socket Listener
+  useEffect(() => {
+    if (!socket) return
+
+    socket.on('order_update', (data) => {
+      // When an order updates, we want to show a notification.
+      // We can either fetch all (safe) or append locally (fast).
+      // Since we created a Notification in DB on backend, fetching is cleaner to ensure sync.
+      fetchNotifications()
+
+      // Optional: Trigger a browser/toast notification here if desired
+      // alert(`Order Updated: ${data.message}`) 
+    })
+
+    // Listen for new messages to show in notifications list if desired, 
+    // although Chat usually handles messages. 
+    // If we want "Message Notifications" in this list:
+    socket.on('new_message', () => {
+      fetchNotifications() // Assuming backend creates a 'message' type notification on new message? 
+      // Checked chatController: it emits 'new_message' but didn't see Notification.create there. 
+      // If backend doesn't create Notification record for chat, this won't show in list.
+      // But 'order_update' definitely creates one. 
+    })
+
+    return () => {
+      socket.off('order_update')
+      socket.off('new_message')
+    }
+  }, [socket])
 
   useEffect(() => {
     if (filter === 'all') {
@@ -136,25 +93,83 @@ const Notifications = ({ user }) => {
     }
   }, [filter, notifications])
 
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => prev.map(notification => 
-      notification.id === notificationId 
-        ? { ...notification, read: true }
-        : notification
-    ))
+  const getIconForType = (type) => {
+    switch (type) {
+      case 'order': return TruckIcon;
+      case 'message': return ChatBubbleLeftRightIcon;
+      case 'alert': return ExclamationTriangleIcon;
+      default: return BellIcon;
+    }
   }
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(notification => ({ ...notification, read: true })))
+  const getColorForType = (type) => {
+    switch (type) {
+      case 'order': return { text: 'text-blue-600', bg: 'bg-blue-100' };
+      case 'message': return { text: 'text-green-600', bg: 'bg-green-100' };
+      case 'alert': return { text: 'text-yellow-600', bg: 'bg-yellow-100' };
+      default: return { text: 'text-gray-600', bg: 'bg-gray-100' };
+    }
   }
 
-  const removeNotification = (notificationId) => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId))
+  const markAsRead = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token')
+      await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      setNotifications(prev => prev.map(notification =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      ))
+    } catch (error) {
+      console.error('Error marking as read:', error)
+    }
   }
 
-  const clearAllNotifications = () => {
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      await fetch('http://localhost:5000/api/notifications/read-all', {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      setNotifications(prev => prev.map(notification => ({ ...notification, read: true })))
+    } catch (error) {
+      console.error('Error marking all read:', error)
+    }
+  }
+
+  const removeNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token')
+      await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+    } catch (error) {
+      console.error('Error deleting notification:', error)
+    }
+  }
+
+  const clearAllNotifications = async () => {
     if (window.confirm('Are you sure you want to clear all notifications?')) {
-      setNotifications([])
+      try {
+        const token = localStorage.getItem('token')
+        await fetch('http://localhost:5000/api/notifications', {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        setNotifications([])
+      } catch (error) {
+        console.error('Error clearing notifications:', error)
+      }
     }
   }
 
@@ -167,7 +182,7 @@ const Notifications = ({ user }) => {
   const formatDate = (date) => {
     const now = new Date()
     const diffInHours = (now - date) / (1000 * 60 * 60)
-    
+
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor((now - date) / (1000 * 60))
       return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`
@@ -204,7 +219,7 @@ const Notifications = ({ user }) => {
                 Notifications
               </h1>
               <p className="text-gray-600 mt-1">
-                {unreadCount > 0 
+                {unreadCount > 0
                   ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
                   : 'All caught up!'
                 }
@@ -248,11 +263,10 @@ const Notifications = ({ user }) => {
                 <button
                   key={tab.key}
                   onClick={() => setFilter(tab.key)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    filter === tab.key
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${filter === tab.key
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
                 >
                   {tab.label} ({tab.count})
                 </button>
@@ -269,7 +283,7 @@ const Notifications = ({ user }) => {
               {filter === 'all' ? 'No notifications' : `No ${filter} notifications`}
             </h3>
             <p className="text-gray-600 mb-6">
-              {filter === 'all' 
+              {filter === 'all'
                 ? "You're all caught up! New notifications will appear here."
                 : `No ${filter} notifications found. Try checking other categories.`}
             </p>
@@ -281,9 +295,8 @@ const Notifications = ({ user }) => {
               return (
                 <div
                   key={notification.id}
-                  className={`bg-white rounded-lg shadow p-6 ${
-                    !notification.read ? 'border-l-4 border-green-500 bg-green-50' : ''
-                  }`}
+                  className={`bg-white rounded-lg shadow p-6 ${!notification.read ? 'border-l-4 border-green-500 bg-green-50' : ''
+                    }`}
                 >
                   <div className="flex items-start space-x-4">
                     <div className={`flex-shrink-0 w-10 h-10 rounded-full ${notification.bgColor} flex items-center justify-center`}>
@@ -302,18 +315,16 @@ const Notifications = ({ user }) => {
                             <span className="text-sm text-gray-500">
                               {formatDate(notification.date)}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              notification.priority === 'high' ? 'bg-red-100 text-red-800' :
+                            <span className={`text-xs px-2 py-1 rounded-full ${notification.priority === 'high' ? 'bg-red-100 text-red-800' :
                               notification.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                                'bg-gray-100 text-gray-800'
+                              }`}>
                               {notification.priority} priority
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              notification.type === 'order' ? 'bg-purple-100 text-purple-800' :
+                            <span className={`text-xs px-2 py-1 rounded-full ${notification.type === 'order' ? 'bg-purple-100 text-purple-800' :
                               notification.type === 'message' ? 'bg-green-100 text-green-800' :
-                              'bg-orange-100 text-orange-800'
-                            }`}>
+                                'bg-orange-100 text-orange-800'
+                              }`}>
                               {notification.type}
                             </span>
                           </div>

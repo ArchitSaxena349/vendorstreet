@@ -1,145 +1,139 @@
 import { useState, useEffect } from 'react'
-import { 
+import {
   UserGroupIcon,
   BuildingStorefrontIcon,
   ShoppingBagIcon,
   DocumentTextIcon,
   CheckCircleIcon,
-  ClockIcon,
   XCircleIcon,
   EyeIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
 
-const AdminDashboard = ({ user }) => {
+const AdminDashboard = () => {
   const [pendingVendors, setPendingVendors] = useState([])
   const [pendingListings, setPendingListings] = useState([])
   const [stats, setStats] = useState({})
 
   useEffect(() => {
-    // Mock data
-    setPendingVendors([
-      {
-        id: 1,
-        name: 'Fresh Spices Co.',
-        email: 'contact@freshspices.com',
-        phone: '+91 9876543210',
-        businessType: 'Private Limited Company',
-        fssaiLicense: 'FSSAI123456789',
-        appliedDate: '2025-01-25',
-        status: 'pending'
-      },
-      {
-        id: 2,
-        name: 'Organic Grains Ltd.',
-        email: 'info@organicgrains.com',
-        phone: '+91 8765432109',
-        businessType: 'Partnership',
-        fssaiLicense: 'FSSAI987654321',
-        appliedDate: '2025-01-24',
-        status: 'pending'
-      }
-    ])
-
-    setPendingListings([
-      {
-        id: 1,
-        productName: 'Premium Turmeric Powder',
-        vendor: 'Fresh Spices Co.',
-        category: 'Spices',
-        price: 320,
-        submittedDate: '2025-01-25',
-        status: 'pending'
-      },
-      {
-        id: 2,
-        productName: 'Organic Basmati Rice',
-        vendor: 'Grain Masters Ltd.',
-        category: 'Grains',
-        price: 850,
-        submittedDate: '2025-01-24',
-        status: 'pending'
-      }
-    ])
-
-    setStats({
-      totalVendors: 156,
-      activeVendors: 142,
-      pendingVendors: 14,
-      totalListings: 1247,
-      approvedListings: 1189,
-      pendingListings: 58,
-      totalOrders: 3456,
-      totalRevenue: 2458000
-    })
+    fetchDashboardData()
   }, [])
 
-  const approveVendor = (vendorId) => {
-    setPendingVendors(prev => 
-      prev.map(vendor => 
-        vendor.id === vendorId 
-          ? { ...vendor, status: 'approved' }
-          : vendor
-      )
-    )
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      }
+
+      // Fetch pending vendors
+      const vendorsRes = await fetch('http://localhost:5000/api/vendors/pending', { headers })
+      const vendorsData = await vendorsRes.json()
+      if (vendorsData.success) {
+        setPendingVendors(vendorsData.data)
+      }
+
+      // Fetch pending listings
+      const listingsRes = await fetch('http://localhost:5000/api/listings/admin/pending', { headers })
+      const listingsData = await listingsRes.json()
+      if (listingsData.success) {
+        setPendingListings(listingsData.data) // Assuming backend matches this naming
+      }
+
+      // Fetch stats (mock for now or implement backend endpoint)
+      // For now we can calculate some from the data we have or leave as mock
+      setStats({
+        totalVendors: 156, // Placeholder
+        activeVendors: 142,
+        pendingVendors: vendorsData.data ? vendorsData.data.length : 0,
+        totalListings: 1247,
+        approvedListings: 1189,
+        pendingListings: listingsData.data ? listingsData.data.length : 0,
+        totalOrders: 3456,
+        totalRevenue: 2458000
+      })
+
+    } catch (error) {
+      console.error('Error fetching admin dashboard data:', error)
+    }
   }
 
-  const rejectVendor = (vendorId) => {
-    setPendingVendors(prev => 
-      prev.map(vendor => 
-        vendor.id === vendorId 
-          ? { ...vendor, status: 'rejected' }
-          : vendor
-      )
-    )
+  const handleVendorAction = async (vendorId, status) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/api/vendors/${vendorId}/verify`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status }) // 'verified' or 'rejected'
+      })
+
+      if (response.ok) {
+        // Refresh data
+        fetchDashboardData()
+      } else {
+        alert('Failed to update vendor status')
+      }
+    } catch (error) {
+      console.error('Error updating vendor:', error)
+    }
   }
 
-  const approveListing = (listingId) => {
-    setPendingListings(prev => 
-      prev.map(listing => 
-        listing.id === listingId 
-          ? { ...listing, status: 'approved' }
-          : listing
-      )
-    )
+  const handleListingAction = async (listingId, status) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/api/listings/${listingId}/verify`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status }) // 'approved' or 'rejected'
+      })
+
+      if (response.ok) {
+        fetchDashboardData()
+      } else {
+        alert('Failed to update listing status')
+      }
+    } catch (error) {
+      console.error('Error updating listing:', error)
+    }
   }
 
-  const rejectListing = (listingId) => {
-    setPendingListings(prev => 
-      prev.map(listing => 
-        listing.id === listingId 
-          ? { ...listing, status: 'rejected' }
-          : listing
-      )
-    )
-  }
+  const approveVendor = (id) => handleVendorAction(id, 'verified')
+  const rejectVendor = (id) => handleVendorAction(id, 'rejected')
+  const approveListing = (id) => handleListingAction(id, 'approved')
+  const rejectListing = (id) => handleListingAction(id, 'rejected')
 
   const quickStats = [
-    { 
-      label: 'Total Vendors', 
-      value: stats.totalVendors, 
-      change: '+5%', 
+    {
+      label: 'Total Vendors',
+      value: stats.totalVendors,
+      change: '+5%',
       color: 'text-blue-600',
       icon: BuildingStorefrontIcon
     },
-    { 
-      label: 'Active Listings', 
-      value: stats.approvedListings, 
-      change: '+12%', 
+    {
+      label: 'Active Listings',
+      value: stats.approvedListings,
+      change: '+12%',
       color: 'text-green-600',
       icon: DocumentTextIcon
     },
-    { 
-      label: 'Total Orders', 
-      value: stats.totalOrders, 
-      change: '+18%', 
+    {
+      label: 'Total Orders',
+      value: stats.totalOrders,
+      change: '+18%',
       color: 'text-purple-600',
       icon: ShoppingBagIcon
     },
-    { 
-      label: 'Revenue', 
-      value: `₹${(stats.totalRevenue / 100000).toFixed(1)}L`, 
-      change: '+15%', 
+    {
+      label: 'Revenue',
+      value: `₹${(stats.totalRevenue / 100000).toFixed(1)}L`,
+      change: '+15%',
       color: 'text-orange-600',
       icon: ChartBarIcon
     }
@@ -185,12 +179,12 @@ const AdminDashboard = ({ user }) => {
             <div className="p-6">
               <div className="space-y-4">
                 {pendingVendors.filter(vendor => vendor.status === 'pending').map((vendor) => (
-                  <div key={vendor.id} className="border rounded-lg p-4">
+                  <div key={vendor._id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-medium text-gray-900">{vendor.name}</h3>
-                        <p className="text-sm text-gray-600">{vendor.email}</p>
-                        <p className="text-sm text-gray-600">{vendor.phone}</p>
+                        <h3 className="font-medium text-gray-900">{vendor.companyName}</h3>
+                        <p className="text-sm text-gray-600">{vendor.userId?.email}</p>
+                        <p className="text-sm text-gray-600">{vendor.userId?.phone}</p>
                       </div>
                       <span className="px-2  py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
                         Pending
@@ -199,22 +193,22 @@ const AdminDashboard = ({ user }) => {
                     <div className="text-sm text-gray-600 mb-3">
                       <p>Business Type: {vendor.businessType}</p>
                       <p>FSSAI: {vendor.fssaiLicense}</p>
-                      <p>Applied: {vendor.appliedDate}</p>
+                      <p>Applied: {new Date(vendor.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="flex space-x-2">
                       <button className="flex items-center space-x-1 px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200">
                         <EyeIcon className="h-4 w-4" />
                         <span>View</span>
                       </button>
-                      <button 
-                        onClick={() => approveVendor(vendor.id)}
+                      <button
+                        onClick={() => approveVendor(vendor._id)}
                         className="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
                       >
                         <CheckCircleIcon className="h-4 w-4" />
                         <span>Approve</span>
                       </button>
-                      <button 
-                        onClick={() => rejectVendor(vendor.id)}
+                      <button
+                        onClick={() => rejectVendor(vendor._id)}
                         className="flex items-center space-x-1 px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
                       >
                         <XCircleIcon className="h-4 w-4" />
@@ -237,12 +231,12 @@ const AdminDashboard = ({ user }) => {
             <div className="p-6">
               <div className="space-y-4">
                 {pendingListings.filter(listing => listing.status === 'pending').map((listing) => (
-                  <div key={listing.id} className="border rounded-lg p-4">
+                  <div key={listing._id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-medium text-gray-900">{listing.productName}</h3>
-                        <p className="text-sm text-gray-600">{listing.vendor}</p>
-                        <p className="text-sm text-gray-600">{listing.category}</p>
+                        <h3 className="font-medium text-gray-900">{listing.title}</h3>
+                        <p className="text-sm text-gray-600">{listing.vendorId?.companyName}</p>
+                        <p className="text-sm text-gray-600">{listing.categoryId?.name}</p>
                       </div>
                       <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
                         Pending
@@ -250,22 +244,22 @@ const AdminDashboard = ({ user }) => {
                     </div>
                     <div className="text-sm text-gray-600 mb-3">
                       <p>Price: ₹{listing.price}</p>
-                      <p>Submitted: {listing.submittedDate}</p>
+                      <p>Submitted: {new Date(listing.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="flex space-x-2">
                       <button className="flex items-center space-x-1 px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200">
                         <EyeIcon className="h-4 w-4" />
                         <span>View</span>
                       </button>
-                      <button 
-                        onClick={() => approveListing(listing.id)}
+                      <button
+                        onClick={() => approveListing(listing._id)}
                         className="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
                       >
                         <CheckCircleIcon className="h-4 w-4" />
                         <span>Approve</span>
                       </button>
-                      <button 
-                        onClick={() => rejectListing(listing.id)}
+                      <button
+                        onClick={() => rejectListing(listing._id)}
                         className="flex items-center space-x-1 px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
                       >
                         <XCircleIcon className="h-4 w-4" />

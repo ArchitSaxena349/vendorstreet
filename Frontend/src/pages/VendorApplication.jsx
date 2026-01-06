@@ -1,11 +1,13 @@
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { 
-  DocumentArrowUpIcon,
+import {
+  UserIcon,
+  ChatBubbleLeftRightIcon,
+  InformationCircleIcon,
   CheckCircleIcon,
-  ClockIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon
+  DocumentArrowUpIcon
 } from '@heroicons/react/24/outline'
 
 const VendorApplication = ({ user }) => {
@@ -72,7 +74,7 @@ const VendorApplication = ({ user }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked, files } = e.target
-    
+
     if (type === 'file') {
       setFormData({ ...formData, [name]: files[0] })
     } else if (type === 'checkbox') {
@@ -87,7 +89,7 @@ const VendorApplication = ({ user }) => {
     } else {
       setFormData({ ...formData, [name]: value })
     }
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' })
@@ -108,26 +110,26 @@ const VendorApplication = ({ user }) => {
         if (!formData.contactPerson) newErrors.contactPerson = 'Contact person is required'
         if (!formData.phone) newErrors.phone = 'Phone number is required'
         break
-      
+
       case 2:
         if (!formData.fssaiLicense) newErrors.fssaiLicense = 'FSSAI license number is required'
         if (!formData.fssaiDocument) newErrors.fssaiDocument = 'FSSAI license document is required'
         if (!formData.businessProof) newErrors.businessProof = 'Business proof document is required'
         break
-      
+
       case 3:
         if (!formData.bankAccountNumber) newErrors.bankAccountNumber = 'Bank account number is required'
         if (!formData.bankIFSC) newErrors.bankIFSC = 'Bank IFSC code is required'
         if (!formData.bankName) newErrors.bankName = 'Bank name is required'
         break
-      
+
       case 4:
         if (!formData.businessDescription) newErrors.businessDescription = 'Business description is required'
         if (formData.productCategories.length === 0) newErrors.productCategories = 'Select at least one product category'
         if (!formData.experienceYears) newErrors.experienceYears = 'Experience years is required'
         if (!formData.monthlyCapacity) newErrors.monthlyCapacity = 'Monthly capacity is required'
         break
-      
+
       case 5:
         if (!formData.agreeToTerms) newErrors.agreeToTerms = 'You must agree to terms and conditions'
         if (!formData.agreeToVerification) newErrors.agreeToVerification = 'You must agree to verification process'
@@ -152,16 +154,53 @@ const VendorApplication = ({ user }) => {
     if (!validateStep(currentStep)) return
 
     setIsSubmitting(true)
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Mock successful submission
+      const data = new FormData()
+      data.append('companyName', formData.businessName)
+      data.append('businessType', formData.businessType)
+      data.append('gstNumber', formData.gstNumber)
+      data.append('fssaiLicense', formData.fssaiLicense)
+
+      // Address construction
+      data.append('businessAddress[street]', formData.businessAddress)
+      data.append('businessAddress[city]', formData.city)
+      data.append('businessAddress[state]', formData.state)
+      data.append('businessAddress[pincode]', formData.pincode)
+
+      // Files
+      if (formData.fssaiDocument) {
+        data.append('fssaiDocument', formData.fssaiDocument)
+      }
+      if (formData.businessProof) {
+        data.append('businessProof', formData.businessProof)
+      }
+
+      // Other fields logic can be added here if backend supports them (e.g. description, categories)
+      // Currently backend vendorController mostly focuses on profile core data.
+      // We'll append others as metadata if needed or expand the backend later.
+
+      const token = localStorage.getItem('token') // Assuming token is stored here
+
+      const response = await fetch('http://localhost:5000/api/vendors/apply', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: data
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Submission failed')
+      }
+
+      // Successful submission
       alert('Vendor application submitted successfully! You will receive a confirmation email shortly.')
-      navigate('/dashboard')
+      navigate('/vendor-dashboard') // Navigate to proper vendor dashboard
     } catch (error) {
-      alert('Failed to submit application. Please try again.')
+      alert(error.message || 'Failed to submit application. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -174,7 +213,7 @@ const VendorApplication = ({ user }) => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Business Information</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -185,9 +224,8 @@ const VendorApplication = ({ user }) => {
                     name="businessName"
                     value={formData.businessName}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.businessName ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.businessName ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter your business name"
                   />
                   {errors.businessName && (
@@ -203,9 +241,8 @@ const VendorApplication = ({ user }) => {
                     name="businessType"
                     value={formData.businessType}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.businessType ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.businessType ? 'border-red-500' : 'border-gray-300'
+                      } `}
                   >
                     <option value="">Select business type</option>
                     {businessTypes.map(type => (
@@ -226,9 +263,8 @@ const VendorApplication = ({ user }) => {
                     value={formData.businessAddress}
                     onChange={handleInputChange}
                     rows={3}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.businessAddress ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.businessAddress ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter complete business address"
                   />
                   {errors.businessAddress && (
@@ -245,9 +281,8 @@ const VendorApplication = ({ user }) => {
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.city ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.city ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter city"
                   />
                   {errors.city && (
@@ -264,9 +299,8 @@ const VendorApplication = ({ user }) => {
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.state ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.state ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter state"
                   />
                   {errors.state && (
@@ -283,9 +317,8 @@ const VendorApplication = ({ user }) => {
                     name="pincode"
                     value={formData.pincode}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.pincode ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.pincode ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter pincode"
                   />
                   {errors.pincode && (
@@ -302,9 +335,8 @@ const VendorApplication = ({ user }) => {
                     name="contactPerson"
                     value={formData.contactPerson}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.contactPerson ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.contactPerson ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter contact person name"
                   />
                   {errors.contactPerson && (
@@ -321,9 +353,8 @@ const VendorApplication = ({ user }) => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.phone ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.phone ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter phone number"
                   />
                   {errors.phone && (
@@ -355,7 +386,7 @@ const VendorApplication = ({ user }) => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Legal Documents</h3>
-              
+
               <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
                 <div className="flex items-start space-x-2">
                   <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -378,9 +409,8 @@ const VendorApplication = ({ user }) => {
                     name="fssaiLicense"
                     value={formData.fssaiLicense}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.fssaiLicense ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.fssaiLicense ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter FSSAI license number"
                   />
                   {errors.fssaiLicense && (
@@ -465,7 +495,7 @@ const VendorApplication = ({ user }) => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Banking Details</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -476,9 +506,8 @@ const VendorApplication = ({ user }) => {
                     name="bankName"
                     value={formData.bankName}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.bankName ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.bankName ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter bank name"
                   />
                   {errors.bankName && (
@@ -495,9 +524,8 @@ const VendorApplication = ({ user }) => {
                     name="bankAccountNumber"
                     value={formData.bankAccountNumber}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.bankAccountNumber ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.bankAccountNumber ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter account number"
                   />
                   {errors.bankAccountNumber && (
@@ -514,9 +542,8 @@ const VendorApplication = ({ user }) => {
                     name="bankIFSC"
                     value={formData.bankIFSC}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.bankIFSC ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.bankIFSC ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Enter IFSC code"
                   />
                   {errors.bankIFSC && (
@@ -533,7 +560,7 @@ const VendorApplication = ({ user }) => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Business Details</h3>
-              
+
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -544,9 +571,8 @@ const VendorApplication = ({ user }) => {
                     value={formData.businessDescription}
                     onChange={handleInputChange}
                     rows={4}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.businessDescription ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.businessDescription ? 'border-red-500' : 'border-gray-300'
+                      } `}
                     placeholder="Describe your business, products, and services"
                   />
                   {errors.businessDescription && (
@@ -587,9 +613,8 @@ const VendorApplication = ({ user }) => {
                       name="experienceYears"
                       value={formData.experienceYears}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                        errors.experienceYears ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.experienceYears ? 'border-red-500' : 'border-gray-300'
+                        } `}
                     >
                       <option value="">Select experience</option>
                       <option value="0-1">0-1 years</option>
@@ -612,9 +637,8 @@ const VendorApplication = ({ user }) => {
                       name="monthlyCapacity"
                       value={formData.monthlyCapacity}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                        errors.monthlyCapacity ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.monthlyCapacity ? 'border-red-500' : 'border-gray-300'
+                        } `}
                       placeholder="e.g., 1000 kg, 500 units"
                     />
                     {errors.monthlyCapacity && (
@@ -632,7 +656,7 @@ const VendorApplication = ({ user }) => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Review & Submit</h3>
-              
+
               <div className="bg-gray-50 rounded-lg p-6 mb-6">
                 <h4 className="font-medium text-gray-900 mb-4">Application Summary</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -736,28 +760,25 @@ const VendorApplication = ({ user }) => {
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                  step.id < currentStep 
-                    ? 'bg-green-600 border-green-600 text-white'
-                    : step.id === currentStep
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${step.id < currentStep
+                  ? 'bg-green-600 border-green-600 text-white'
+                  : step.id === currentStep
                     ? 'border-green-600 text-green-600'
                     : 'border-gray-300 text-gray-300'
-                }`}>
+                  } `}>
                   {step.id < currentStep ? (
                     <CheckCircleIcon className="h-5 w-5" />
                   ) : (
                     <span className="text-sm font-medium">{step.id}</span>
                   )}
                 </div>
-                <span className={`ml-2 text-sm font-medium ${
-                  step.id <= currentStep ? 'text-gray-900' : 'text-gray-500'
-                }`}>
+                <span className={`ml-2 text-sm font-medium ${step.id <= currentStep ? 'text-gray-900' : 'text-gray-500'
+                  } `}>
                   {step.name}
                 </span>
                 {index < steps.length - 1 && (
-                  <div className={`hidden md:block w-20 h-0.5 ml-4 ${
-                    step.id < currentStep ? 'bg-green-600' : 'bg-gray-300'
-                  }`} />
+                  <div className={`hidden md:block w-20 h-0.5 ml-4 ${step.id < currentStep ? 'bg-green-600' : 'bg-gray-300'
+                    } `} />
                 )}
               </div>
             ))}

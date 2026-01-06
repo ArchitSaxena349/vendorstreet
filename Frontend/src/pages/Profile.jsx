@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { 
+import {
   UserIcon,
   BuildingStorefrontIcon,
   DocumentTextIcon,
@@ -14,7 +14,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline'
 
-const Profile = ({ user }) => {
+const Profile = () => {
   const [activeTab, setActiveTab] = useState('personal')
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -96,7 +96,7 @@ const Profile = ({ user }) => {
       const data = await response.json()
       if (data.success) {
         setProfileData(data.data)
-        
+
         // Fetch documents
         const documentsResponse = await fetch('http://localhost:5000/api/auth/documents', {
           headers: {
@@ -104,7 +104,7 @@ const Profile = ({ user }) => {
             'Content-Type': 'application/json'
           }
         })
-        
+
         const documentsData = await documentsResponse.json()
         if (documentsData.success) {
           setDocuments(documentsData.data.documents)
@@ -154,13 +154,13 @@ const Profile = ({ user }) => {
         alert('Please select an image file (JPEG, PNG, GIF)')
         return
       }
-      
+
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         alert('Image size must be less than 5MB')
         return
       }
-      
+
       setProfileImageFile(file)
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -197,14 +197,14 @@ const Profile = ({ user }) => {
       if (data.success) {
         // Add the new document to the list
         setDocuments(prev => [...prev, data.data.document])
-        
+
         // Reset form
         setShowUploadModal(false)
         setDocumentFile(null)
         setSelectedDocumentType('')
         setDocumentNumber('')
         setDocumentExpiryDate('')
-        
+
         alert('Document uploaded successfully!')
       } else {
         alert('Failed to upload document: ' + data.message)
@@ -226,13 +226,13 @@ const Profile = ({ user }) => {
         alert('Please select a PDF or image file (JPEG, PNG)')
         return
       }
-      
+
       // Validate file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
         alert('File size must be less than 10MB')
         return
       }
-      
+
       setDocumentFile(file)
     }
   }
@@ -268,14 +268,14 @@ const Profile = ({ user }) => {
     setIsSaving(true)
     try {
       const token = localStorage.getItem('token')
-      
+
       if (activeTab === 'personal') {
         // Save personal information
         const formDataToSend = new FormData()
         formDataToSend.append('firstName', formData.firstName)
         formDataToSend.append('lastName', formData.lastName)
         formDataToSend.append('phone', formData.phone)
-        
+
         if (profileImageFile) {
           formDataToSend.append('profileImage', profileImageFile)
         }
@@ -408,11 +408,10 @@ const Profile = ({ user }) => {
                 </h1>
                 <p className="text-gray-600">{profileData?.user.email}</p>
                 <div className="flex items-center space-x-2 mt-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    profileData?.user.emailVerified 
-                      ? 'bg-green-100 text-green-800' 
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${profileData?.user.emailVerified
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                    }`}>
                     {profileData?.user.emailVerified ? 'Email Verified' : 'Email Pending'}
                   </span>
                   <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
@@ -448,11 +447,10 @@ const Profile = ({ user }) => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
+                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
                       ? 'border-green-500 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <tab.icon className="h-5 w-5" />
                   <span>{tab.name}</span>
@@ -643,7 +641,7 @@ const Profile = ({ user }) => {
                     <p className="text-gray-600 mb-4">
                       You're currently registered as a buyer. Apply to become a vendor to add business information.
                     </p>
-                    <button 
+                    <button
                       onClick={() => window.location.href = '/vendor-application'}
                       className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
                     >
@@ -811,12 +809,12 @@ const Profile = ({ user }) => {
                           <div>
                             <p className="font-medium text-gray-900">
                               {profileData.vendorProfile.verificationStatus === 'verified' ? 'Verified Vendor' :
-                               profileData.vendorProfile.verificationStatus === 'under_review' ? 'Under Review' :
-                               profileData.vendorProfile.verificationStatus === 'pending' ? 'Pending Verification' :
-                               'Verification Required'}
+                                profileData.vendorProfile.verificationStatus === 'under_review' ? 'Under Review' :
+                                  profileData.vendorProfile.verificationStatus === 'pending' ? 'Pending Verification' :
+                                    'Verification Required'}
                             </p>
                             <p className="text-sm text-gray-600">
-                              {profileData.vendorProfile.verificationStatus === 'verified' 
+                              {profileData.vendorProfile.verificationStatus === 'verified'
                                 ? 'Your business has been verified and approved.'
                                 : 'Complete your profile and upload required documents for verification.'}
                             </p>
@@ -834,7 +832,7 @@ const Profile = ({ user }) => {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold text-gray-900">Documents & Verification</h2>
-                  <button 
+                  <button
                     onClick={() => setShowUploadModal(true)}
                     className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   >
@@ -842,7 +840,7 @@ const Profile = ({ user }) => {
                     <span>Upload Document</span>
                   </button>
                 </div>
-                
+
                 {documents.length === 0 ? (
                   <div className="text-center p-8">
                     <DocumentTextIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -850,7 +848,7 @@ const Profile = ({ user }) => {
                     <p className="text-gray-600 mb-4">
                       Upload your business documents to complete verification process.
                     </p>
-                    <button 
+                    <button
                       onClick={() => setShowUploadModal(true)}
                       className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
                     >
@@ -873,7 +871,7 @@ const Profile = ({ user }) => {
                                   {document.status.replace('_', ' ').toUpperCase()}
                                 </span>
                               </div>
-                              
+
                               <div className="space-y-1 text-sm text-gray-600">
                                 {document.documentNumber && (
                                   <p>Document Number: <span className="font-medium">{document.documentNumber}</span></p>
@@ -909,7 +907,7 @@ const Profile = ({ user }) => {
                                   </p>
                                 </div>
                               )}
-                              
+
                               {document.status === 'under_review' && (
                                 <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                                   <p className="text-sm text-yellow-800">
@@ -917,7 +915,7 @@ const Profile = ({ user }) => {
                                   </p>
                                 </div>
                               )}
-                              
+
                               {document.status === 'scheduled' && (
                                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                                   <p className="text-sm text-blue-800">
@@ -925,7 +923,7 @@ const Profile = ({ user }) => {
                                   </p>
                                 </div>
                               )}
-                              
+
                               {document.status === 'rejected' && (
                                 <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
                                   <p className="text-sm text-red-800">
@@ -935,16 +933,16 @@ const Profile = ({ user }) => {
                               )}
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2">
-                            <button 
+                            <button
                               onClick={() => window.open(document.filePath || '#', '_blank')}
                               className="text-green-600 hover:text-green-700 text-sm font-medium"
                             >
                               View
                             </button>
                             {document.status !== 'verified' && (
-                              <button 
+                              <button
                                 onClick={() => {
                                   setSelectedDocumentType(document.type)
                                   setShowUploadModal(true)
@@ -954,7 +952,7 @@ const Profile = ({ user }) => {
                                 Replace
                               </button>
                             )}
-                            <button 
+                            <button
                               onClick={() => handleDeleteDocument(document.id)}
                               className="text-red-600 hover:text-red-700 p-1"
                               title="Delete document"

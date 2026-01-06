@@ -10,79 +10,40 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
-const NotificationDropdown = ({ user }) => {
+const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef(null)
 
-  useEffect(() => {
-    // Mock notifications data
-    const mockNotifications = [
-      {
-        id: 1,
-        type: 'order',
-        title: 'Order Shipped',
-        message: 'Your order #VS2024002 has been shipped and is on the way.',
-        timestamp: '2 minutes ago',
-        read: false,
-        icon: TruckIcon,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100',
-        link: '/orders'
-      },
-      {
-        id: 2,
-        type: 'message',
-        title: 'New Message',
-        message: 'Fresh Spices Co. sent you a message about your inquiry.',
-        timestamp: '5 minutes ago',
-        read: false,
-        icon: ChatBubbleLeftRightIcon,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        link: '/chat'
-      },
-      {
-        id: 3,
-        type: 'order',
-        title: 'Order Delivered',
-        message: 'Your order #VS2024001 has been successfully delivered.',
-        timestamp: '1 hour ago',
-        read: true,
-        icon: CheckIcon,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        link: '/orders'
-      },
-      {
-        id: 4,
-        type: 'alert',
-        title: 'Stock Alert',
-        message: 'Turmeric Powder is running low in stock. Only 5 units left.',
-        timestamp: '2 hours ago',
-        read: true,
-        icon: ExclamationTriangleIcon,
-        color: 'text-yellow-600',
-        bgColor: 'bg-yellow-100',
-        link: '/products'
-      },
-      {
-        id: 5,
-        type: 'order',
-        title: 'New Order',
-        message: 'You received a new order for Organic Basmati Rice.',
-        timestamp: '3 hours ago',
-        read: true,
-        icon: ShoppingCartIcon,
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100',
-        link: '/orders'
-      }
-    ]
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
 
-    setNotifications(mockNotifications)
-    setUnreadCount(mockNotifications.filter(n => !n.read).length)
+      const response = await fetch('http://localhost:5000/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const result = await response.json()
+      if (result.success) {
+        setNotifications(result.data.map(n => ({
+          ...n,
+          icon: getIconForType(n.type),
+          color: getColorForType(n.type).text,
+          bgColor: getColorForType(n.type).bg,
+          timestamp: formatDate(new Date(n.timestamp))
+        })))
+        setUnreadCount(result.data.filter(n => !n.read).length)
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchNotifications()
+    const interval = setInterval(fetchNotifications, 15000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -96,25 +57,88 @@ const NotificationDropdown = ({ user }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => prev.map(notification => 
-      notification.id === notificationId 
-        ? { ...notification, read: true }
-        : notification
-    ))
-    setUnreadCount(prev => Math.max(0, prev - 1))
+  const getIconForType = (type) => {
+    switch (type) {
+      case 'order': return TruckIcon;
+      case 'message': return ChatBubbleLeftRightIcon;
+      case 'alert': return ExclamationTriangleIcon;
+      default: return BellIcon;
+    }
   }
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(notification => ({ ...notification, read: true })))
-    setUnreadCount(0)
+  const getColorForType = (type) => {
+    switch (type) {
+      case 'order': return { text: 'text-blue-600', bg: 'bg-blue-100' };
+      case 'message': return { text: 'text-green-600', bg: 'bg-green-100' };
+      case 'alert': return { text: 'text-yellow-600', bg: 'bg-yellow-100' };
+      default: return { text: 'text-gray-600', bg: 'bg-gray-100' };
+    }
   }
 
-  const removeNotification = (notificationId) => {
-    const notification = notifications.find(n => n.id === notificationId)
-    setNotifications(prev => prev.filter(n => n.id !== notificationId))
-    if (notification && !notification.read) {
+  const formatDate = (date) => {
+    const now = new Date()
+    const diffInHours = (now - date) / (1000 * 60 * 60)
+
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor((now - date) / (1000 * 60))
+      return `${diffInMinutes}m ago`
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)}h ago`
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24)
+      return `${diffInDays}d ago`
+    }
+  }
+
+  const markAsRead = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token')
+      await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      setNotifications(prev => prev.map(notification =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      ))
       setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch (error) {
+      console.error('Error marking as read:', error)
+    }
+  }
+
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      await fetch('http://localhost:5000/api/notifications/read-all', {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      setNotifications(prev => prev.map(notification => ({ ...notification, read: true })))
+      setUnreadCount(0)
+    } catch (error) {
+      console.error('Error marking all read:', error)
+    }
+  }
+
+  const removeNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token')
+      await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      const notification = notifications.find(n => n.id === notificationId)
+      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      if (notification && !notification.read) {
+        setUnreadCount(prev => Math.max(0, prev - 1))
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error)
     }
   }
 
@@ -170,9 +194,8 @@ const NotificationDropdown = ({ user }) => {
                   return (
                     <div
                       key={notification.id}
-                      className={`p-4 hover:bg-gray-50 transition-colors ${
-                        !notification.read ? 'bg-blue-50' : ''
-                      }`}
+                      className={`p-4 hover:bg-gray-50 transition-colors ${!notification.read ? 'bg-blue-50' : ''
+                        }`}
                     >
                       <div className="flex items-start space-x-3">
                         <div className={`flex-shrink-0 w-8 h-8 rounded-full ${notification.bgColor} flex items-center justify-center`}>

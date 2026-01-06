@@ -1,94 +1,119 @@
 # VendorStreet - Food Raw Materials Marketplace
 
-A comprehensive marketplace platform connecting food businesses with verified vendors for sourcing raw materials.
-
-## 🚀 Quick Start
-
-### Development Mode (Both Frontend & Backend)
-
-**Option 1: Using Scripts (Recommended)**
-```bash
-# Windows
-dev.bat
-
-# Unix/Linux/Mac
-chmod +x dev.sh
-./dev.sh
-
-# PowerShell (Windows)
-./start-dev.ps1
-```
-
-**Option 2: Using npm**
-```bash
-npm run dev
-```
-
-**Option 3: Manual (Separate Terminals)**
-```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend  
-cd Frontend
-npm run dev
-```
-
-### Production Mode
-```bash
-# Windows
-start.bat
-
-# Or manually
-cd backend
-npm start
-```
-
-## 📡 Server URLs
-
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:5000
-- **Health Check**: http://localhost:5000/health
-
-## 🛠️ Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start both frontend and backend in development mode |
-| `npm run server` | Start only backend server |
-| `npm run client` | Start only frontend server |
-| `npm run build` | Build frontend for production |
-| `npm run setup` | Install all dependencies and build |
+VendorStreet is a B2B marketplace application connecting buyers (restaurants, cafes) with vendors (farmers, wholesalers) for food raw materials.
 
 ## Features
 
-- **Multi-role Authentication**: Buyers, Vendors, and Admin roles
-- **Vendor Verification**: FSSAI license and address verification
-- **Product Listings**: Comprehensive product catalog with categories
-- **Direct Communication**: In-app messaging and WhatsApp integration
-- **Document Upload**: File upload system for verification documents
-- **Profile Management**: Comprehensive vendor profile system
+### For Buyers
+- **Browse Products**: Search and filter a wide range of raw materials.
+- **Order Management**: Add items to cart, place orders, and track status.
+- **Communication**: Real-time chat with vendors.
+- **Notifications**: Get alerts for order updates and messages.
+- **Wishlist**: Save favorite items for later.
+
+### For Vendors
+- **Dashboard**: Track sales, revenue, and order status.
+- **Product Management**: Add, edit, and delete product listings with images.
+- **Order Fulfillment**: Update order status (Shipped, Delivered).
+- **Business Profile**: Manage company details and verification documents.
+
+### For Admins
+- **Verification**: Approve or reject new vendor applications.
+- **Content Moderation**: Verify new product listings before they go live.
+- **Analytics**: Overview of platform users and orders.
 
 ## Tech Stack
 
-- **Frontend**: React 19, Vite, Tailwind CSS, React Router DOM
-- **Backend**: Node.js, Express.js, MongoDB, JWT Authentication
-- **File Upload**: Multer middleware with validation
+- **Frontend**: React, Vite, Tailwind CSS, Headless UI, Heroicons, React Router v6.
+- **Backend**: Node.js, Express.js, MongoDB (Mongoose).
+- **Authentication**: JWT (JSON Web Tokens).
+- **Real-time**: Custom polling (MVP implementation for Chat/Notifications).
 
 ## Prerequisites
 
-- Node.js (v16 or higher)
-- MongoDB (local or cloud)
-- npm
+- Node.js (v14 or higher)
+- MongoDB (Local or Atlas connection string)
 
-## Environment Setup
+## Installation
 
-Create `.env` file in backend directory:
+1.  **Clone the repository**
+    ```bash
+    git clone <repository-url>
+    cd Vendorstreet
+    ```
+
+2.  **Install Backend Dependencies**
+    ```bash
+    cd backend
+    npm install
+    ```
+
+3.  **Install Frontend Dependencies**
+    ```bash
+    cd ../Frontend
+    npm install
+    ```
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+Create a `.env` file in the `backend` directory:
 ```env
-MONGODB_URI=mongodb://localhost:27017/VendorStreet
-JWT_SECRET=your_super_secure_jwt_secret_key
 PORT=5000
-NODE_ENV=development
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
 FRONTEND_URL=http://localhost:5173
 ```
+
+### Frontend
+The frontend connects to `http://localhost:5000` by default.
+
+## Running Locally
+
+1.  **Start the Backend Server**
+    ```bash
+    cd backend
+    npm run dev
+    ```
+    Server will start on `http://localhost:5000`.
+
+2.  **Start the Frontend Application**
+    ```bash
+    cd Frontend
+    npm run dev
+    ```
+    Application will run on `http://localhost:5173`.
+
+## Folder Structure
+
+```
+Vendorstreet/
+├── backend/                # Node.js/Express Backend
+│   ├── controllers/       # Route logic
+│   ├── models/            # Mongoose schemas
+│   ├── routes/            # API routes
+│   ├── middleware/        # Auth and upload middleware
+│   ├── utils/             # Database connection, seeders
+│   └── index.js           # Entry point
+│
+└── Frontend/               # React Frontend
+    ├── src/
+    │   ├── components/    # Reusable components
+    │   ├── context/       # React Context (Auth, Cart)
+    │   ├── pages/         # Page components
+    │   └── App.jsx        # Main component with Routes
+```
+
+## API Documentation
+
+The API Documentation is available at `GET /api` when the server is running.
+Common endpoints:
+- `POST /api/auth/register`: Register new user
+- `POST /api/auth/login`: Login
+- `GET /api/listings`: Get all products
+- `POST /api/orders`: Place an order
+- `GET /api/chat/conversations`: Get user chats
+
+## License
+
+This project is licensed under the MIT License.

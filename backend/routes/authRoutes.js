@@ -1,16 +1,16 @@
 import { Router } from 'express';
-import { 
-    home, 
-    register, 
-    login, 
-    getProfile, 
+import {
+    home,
+    register,
+    login,
+    getProfile,
     updateProfile,
     updateVendorProfile,
     uploadProfileImage,
     uploadDocument,
     getDocuments,
     deleteDocument
-} from '../controllers/authcontroller.js';
+} from '../controllers/authController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { uploadProfileImage as uploadMiddleware, uploadDocument as uploadDocMiddleware, handleUploadError } from '../middleware/upload.js';
 

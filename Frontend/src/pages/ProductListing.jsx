@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { 
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useCart } from '../context/CartContext'
+import {
   MagnifyingGlassIcon,
   FunnelIcon,
   AdjustmentsHorizontalIcon,
@@ -13,6 +14,8 @@ import {
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 
 const ProductListing = () => {
+  const navigate = useNavigate()
+  const { addToCart } = useCart()
   const [searchParams] = useSearchParams()
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
@@ -69,145 +72,50 @@ const ProductListing = () => {
 
     return baseCategoriesData.map(category => ({
       ...category,
-      count: category.id === 'all' 
-        ? products.length 
+      count: category.id === 'all'
+        ? products.length
         : products.filter(product => product.category === category.id).length
     })).filter(category => category.count > 0 || category.id === 'all') // Only show categories with products
   }, [products])
 
   useEffect(() => {
-    // Mock data - replace with actual API call
-    const mockProducts = [
-      {
-        id: 1,
-        name: 'Organic Basmati Rice',
-        vendor: 'Grain Masters Ltd.',
-        vendorVerified: true,
-        vendorRating: 4.8,
-        category: 'grains',
-        price: 850,
-        unit: 'per 25kg bag',
-        originalPrice: 950,
-        discount: 11,
-        image: '/rice.jpg',
-        inStock: true,
-        stockQuantity: 45,
-        minOrder: 1,
-        description: 'Premium quality organic basmati rice, aged for perfect aroma and taste.',
-        tags: ['organic', 'premium', 'aged'],
-        rating: 4.6,
-        reviews: 24,
-        location: 'Punjab, India'
-      },
-      {
-        id: 2,
-        name: 'Premium Turmeric Powder',
-        vendor: 'Fresh Spices Co.',
-        vendorVerified: true,
-        vendorRating: 4.9,
-        category: 'spices',
-        price: 320,
-        unit: 'per kg',
-        originalPrice: 350,
-        discount: 9,
-        image: '/turmeric.jpg',
-        inStock: true,
-        stockQuantity: 120,
-        minOrder: 5,
-        description: 'Pure turmeric powder with high curcumin content, naturally processed.',
-        tags: ['pure', 'high-curcumin', 'natural'],
-        rating: 4.7,
-        reviews: 18,
-        location: 'Kerala, India'
-      },
-      {
-        id: 3,
-        name: 'Fresh Milk (Full Cream)',
-        vendor: 'Dairy Fresh Suppliers',
-        vendorVerified: false,
-        vendorRating: 4.3,
-        category: 'dairy',
-        price: 65,
-        unit: 'per liter',
-        originalPrice: 70,
-        discount: 7,
-        image: '/milk.jpg',
-        inStock: false,
-        stockQuantity: 0,
-        minOrder: 10,
-        description: 'Fresh full cream milk from grass-fed cows, delivered daily.',
-        tags: ['fresh', 'full-cream', 'daily-delivery'],
-        rating: 4.2,
-        reviews: 12,
-        location: 'Gujarat, India'
-      },
-      {
-        id: 4,
-        name: 'Red Chili Powder',
-        vendor: 'Spice World Inc.',
-        vendorVerified: true,
-        vendorRating: 4.7,
-        category: 'spices',
-        price: 280,
-        unit: 'per kg',
-        originalPrice: 300,
-        discount: 7,
-        image: '/chilli.jpg',
-        inStock: true,
-        stockQuantity: 85,
-        minOrder: 2,
-        description: 'Authentic red chili powder with perfect heat and color.',
-        tags: ['authentic', 'spicy', 'natural-color'],
-        rating: 4.5,
-        reviews: 31,
-        location: 'Rajasthan, India'
-      },
-      {
-        id: 5,
-        name: 'Whole Wheat Flour',
-        vendor: 'Grain Masters Ltd.',
-        vendorVerified: true,
-        vendorRating: 4.8,
-        category: 'grains',
-        price: 45,
-        unit: 'per kg',
-        originalPrice: 50,
-        discount: 10,
-        image: '/floor.jpg',
-        inStock: true,
-        stockQuantity: 200,
-        minOrder: 10,
-        description: 'Stone ground whole wheat flour, rich in fiber and nutrients.',
-        tags: ['stone-ground', 'whole-grain', 'fiber-rich'],
-        rating: 4.4,
-        reviews: 28,
-        location: 'Punjab, India'
-      },
-      {
-        id: 6,
-        name: 'Fresh Coconut Oil',
-        vendor: 'Coconut Paradise',
-        vendorVerified: true,
-        vendorRating: 4.6,
-        category: 'oils',
-        price: 450,
-        unit: 'per liter',
-        originalPrice: 500,
-        discount: 10,
-        image: '\coconut.jpg',
-        inStock: true,
-        stockQuantity: 30,
-        minOrder: 1,
-        description: 'Cold-pressed virgin coconut oil, 100% pure and natural.',
-        tags: ['cold-pressed', 'virgin', 'pure'],
-        rating: 4.8,
-        reviews: 15,
-        location: 'Kerala, India'
-      }
-    ]
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/listings')
+        const data = await response.json()
 
-    setProducts(mockProducts)
-    setFilteredProducts(mockProducts)
+        if (data.success) {
+          // Transform backend data to match frontend structure if needed
+          const formattedProducts = data.data.map(p => ({
+            id: p._id,
+            name: p.title,
+            vendor: 'Unknown Vendor', // Backend needs to populate vendor name
+            vendorVerified: false, // Need to populate from vendor profile
+            vendorRating: 0, // Need to populate
+            category: p.categoryId, // Ensure this matches category IDs
+            price: p.price,
+            unit: p.unit,
+            originalPrice: p.price * 1.1, // Mock original price for now
+            discount: 10,
+            image: p.imageUrl ? `http://localhost:5000${p.imageUrl}` : 'https://via.placeholder.com/300',
+            inStock: p.stockQuantity > 0,
+            stockQuantity: p.stockQuantity,
+            minOrder: p.minimumOrderQuantity,
+            description: p.description,
+            tags: ['fresh'], // Mock tags
+            rating: 0,
+            reviews: 0,
+            location: 'India'
+          }))
+          setProducts(formattedProducts)
+          setFilteredProducts(formattedProducts)
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+      }
+    }
+
+    fetchProducts()
   }, [])
 
   useEffect(() => {
@@ -228,7 +136,7 @@ const ProductListing = () => {
     }
 
     // Price filter
-    filtered = filtered.filter(product => 
+    filtered = filtered.filter(product =>
       product.price >= priceRange[0] && product.price <= priceRange[1]
     )
 
@@ -339,7 +247,7 @@ const ProductListing = () => {
               <p className="text-gray-600">
                 Showing {filteredProducts.length} of {products.length} products
               </p>
-              
+
               {/* Active Filters */}
               <div className="flex flex-wrap gap-2">
                 {selectedCategory !== 'all' && (
@@ -410,12 +318,12 @@ const ProductListing = () => {
         <div className="flex gap-8 relative">
           {/* Mobile Filter Overlay */}
           {showFilters && (
-            <div 
+            <div
               className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
               onClick={() => setShowFilters(false)}
             />
           )}
-          
+
           {/* Sidebar Filters */}
           <div className={`w-80 flex-shrink-0 transition-all duration-300 ${showFilters ? 'block' : 'hidden'} ${showFilters ? 'fixed lg:relative top-0 left-0 h-full lg:h-auto z-50 lg:z-auto overflow-y-auto lg:overflow-visible' : ''}`}>
             <div className="bg-white rounded-lg shadow p-6 sticky top-8 lg:top-8">
@@ -436,11 +344,10 @@ const ProductListing = () => {
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                      selectedCategory === category.id
-                        ? 'bg-green-100 text-green-800'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    className={`w-full text-left px-3 py-2 rounded-md transition-colors ${selectedCategory === category.id
+                      ? 'bg-green-100 text-green-800'
+                      : 'text-gray-700 hover:bg-gray-100'
+                      }`}
                   >
                     <div className="flex justify-between items-center">
                       <span>{category.name}</span>
@@ -460,7 +367,7 @@ const ProductListing = () => {
                     onChange={(e) => {
                       const inputValue = e.target.value
                       setPriceInputs(prev => ({ ...prev, min: inputValue }))
-                      
+
                       const numValue = inputValue === '' ? 0 : parseInt(inputValue)
                       if (!isNaN(numValue) && numValue >= 0) {
                         setPriceRange([numValue, priceRange[1]])
@@ -483,7 +390,7 @@ const ProductListing = () => {
                     onChange={(e) => {
                       const inputValue = e.target.value
                       setPriceInputs(prev => ({ ...prev, max: inputValue }))
-                      
+
                       const numValue = inputValue === '' ? 10000 : parseInt(inputValue)
                       if (!isNaN(numValue) && numValue >= 0) {
                         setPriceRange([priceRange[0], numValue])
@@ -504,29 +411,29 @@ const ProductListing = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendor Type</h3>
               <div className="space-y-2">
                 <label className="flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={verifiedOnly}
                     onChange={(e) => setVerifiedOnly(e.target.checked)}
-                    className="rounded border-gray-300 text-green-600 focus:ring-green-500" 
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">Verified Vendors Only</span>
                 </label>
                 <label className="flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={premiumOnly}
                     onChange={(e) => setPremiumOnly(e.target.checked)}
-                    className="rounded border-gray-300 text-green-600 focus:ring-green-500" 
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">Premium Vendors (4.5+ rating)</span>
                 </label>
                 <label className="flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={inStockOnly}
                     onChange={(e) => setInStockOnly(e.target.checked)}
-                    className="rounded border-gray-300 text-green-600 focus:ring-green-500" 
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">In Stock Only</span>
                 </label>
@@ -556,16 +463,21 @@ const ProductListing = () => {
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                  key={product.id}
+                  onClick={() => navigate(`/products/${product.id}`)}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                >
                   {/* Product Image */}
                   <div className="relative">
                     <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-48 object-cover"
-                    onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'
-                    e.target.alt = 'Product image not available'}}
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'
+                        e.target.alt = 'Product image not available'
+                      }}
                     />
                     {product.discount > 0 && (
                       <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs font-semibold rounded">
@@ -594,7 +506,7 @@ const ProductListing = () => {
                     <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
                       {product.name}
                     </h3>
-                    
+
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="text-sm text-gray-600">{product.vendor}</span>
                       {product.vendorVerified && (
@@ -607,11 +519,10 @@ const ProductListing = () => {
                         {[...Array(5)].map((_, i) => (
                           <StarIcon
                             key={i}
-                            className={`h-4 w-4 ${
-                              i < Math.floor(product.rating)
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-gray-300'
-                            }`}
+                            className={`h-4 w-4 ${i < Math.floor(product.rating)
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                              }`}
                           />
                         ))}
                       </div>
@@ -657,13 +568,21 @@ const ProductListing = () => {
 
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => openWhatsApp(product)}
+                        onClick={(e) => {
+                          e.stopPropagation() // Prevent navigation when clicking actions
+                          openWhatsApp(product)
+                        }}
                         className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-1"
                       >
                         <ChatBubbleLeftRightIcon className="h-4 w-4" />
                         <span>WhatsApp</span>
                       </button>
-                      <button 
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          addToCart(product)
+                          alert('Added to cart!')
+                        }}
                         disabled={!product.inStock}
                         className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center space-x-1"
                       >
