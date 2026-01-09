@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 
 const SocketContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
@@ -34,7 +35,7 @@ export const SocketProvider = ({ children }) => {
                 setSocket(null);
             }
         }
-    }, [isAuthenticated, user]);
+    }, [isAuthenticated, user, socket]);
 
     return (
         <SocketContext.Provider value={socket}>

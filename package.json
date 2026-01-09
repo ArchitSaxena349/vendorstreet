@@ -10,7 +10,8 @@
     "build": "cd Frontend && npm run build",
     "start": "cd backend && npm start",
     "install-deps": "npm install && cd backend && npm install && cd ../Frontend && npm install",
-    "setup": "npm run install-deps && npm run build"
+    "setup": "npm run install-deps && npm run build",
+    "lint": "cd Frontend && npm run lint"
   },
   "keywords": [
     "marketplace",

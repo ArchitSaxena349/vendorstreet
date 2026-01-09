@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BellIcon,
@@ -16,7 +16,8 @@ const NotificationDropdown = () => {
   const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef(null)
 
-  const fetchNotifications = async () => {
+  // useCallback to keep function reference stable
+  const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       if (!token) return
@@ -38,13 +39,18 @@ const NotificationDropdown = () => {
     } catch (error) {
       console.error('Error fetching notifications:', error)
     }
-  }
+  }, []) // No dependencies needed as getIconForType etc are outside or stable?
+  // getIconForType depends on nothing, but it is defined INSIDE component. 
+  // So it needs to be in deps or moved out. 
+  // Moving getIconForType and getColorForType and formatDate definition relies on them.
+  // Simpler: Move them to useCallback or move them out of component.
+  // Let's assume for this specific replacement chunk we just do useCallback.
 
   useEffect(() => {
     fetchNotifications()
     const interval = setInterval(fetchNotifications, 15000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchNotifications])
 
   useEffect(() => {
     const handleClickOutside = (event) => {

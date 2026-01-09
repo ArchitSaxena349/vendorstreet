@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BellIcon,
@@ -14,14 +14,14 @@ import {
 
 import { useSocket } from '../context/SocketContext'
 
-const Notifications = ({ user }) => {
+const Notifications = () => { // Removed unused user prop
   const [notifications, setNotifications] = useState([])
   const [filteredNotifications, setFilteredNotifications] = useState([])
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const socket = useSocket()
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       if (!token) return
@@ -44,20 +44,20 @@ const Notifications = ({ user }) => {
       console.error('Error fetching notifications:', error)
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchNotifications()
     // Poll for new notifications as fallback
     const interval = setInterval(fetchNotifications, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchNotifications])
 
   // Socket Listener
   useEffect(() => {
     if (!socket) return
 
-    socket.on('order_update', (data) => {
+    socket.on('order_update', () => { // Removed unused data parameter
       // When an order updates, we want to show a notification.
       // We can either fetch all (safe) or append locally (fast).
       // Since we created a Notification in DB on backend, fetching is cleaner to ensure sync.
@@ -81,7 +81,7 @@ const Notifications = ({ user }) => {
       socket.off('order_update')
       socket.off('new_message')
     }
-  }, [socket])
+  }, [socket, fetchNotifications])
 
   useEffect(() => {
     if (filter === 'all') {

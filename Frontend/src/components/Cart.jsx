@@ -9,6 +9,20 @@ const Cart = () => {
     const navigate = useNavigate()
     const [isCheckingOut, setIsCheckingOut] = useState(false)
 
+    const loadScript = (src) => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script')
+            script.src = src
+            script.onload = () => {
+                resolve(true)
+            }
+            script.onerror = () => {
+                resolve(false)
+            }
+            document.body.appendChild(script)
+        })
+    }
+
     const handleCheckout = async () => {
         setIsCheckingOut(true)
         try {
@@ -20,41 +34,130 @@ const Cart = () => {
                 return
             }
 
-            // Prepare order data
-            const orderData = {
-                items: cartItems.map(item => ({
-                    listingId: item.id || item._id, // Handle both id formats if inconsistent
-                    quantity: item.quantity
-                })),
-                shippingAddress: { // Mock address for MVP
-                    street: '123 Main St',
-                    city: 'Mumbai',
-                    state: 'Maharashtra',
-                    pincode: '400001',
-                    phone: '9876543210'
-                },
-                paymentMethod: 'COD'
+            // 1. Load Razorpay SDK
+            const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js')
+            if (!res) {
+                alert('Razorpay SDK failed to load. Are you online?')
+                return
             }
 
-            const response = await fetch('http://localhost:5000/api/orders', {
+            // 2. Get Razorpay Key
+            const keyResponse = await fetch('http://localhost:5000/api/payment/key', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const { key } = await keyResponse.json()
+
+            // 3. Create Order on Backend
+            const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(orderData)
+                body: JSON.stringify({
+                    amount: cartTotal, // Amount in INR
+                    currency: 'INR',
+                    receipt: 'receipt_' + Date.now()
+                })
             })
+            const orderResult = await orderResponse.json()
 
-            const result = await response.json()
-
-            if (result.success) {
-                alert('Order placed successfully!')
-                clearCart()
-                setIsCartOpen(false)
-                navigate('/orders')
-            } else {
-                alert('Failed to place order: ' + result.message)
+            if (!orderResult.success) {
+                alert('Server error. Are you online?')
+                return
             }
+
+            // 4. Open Razorpay Options
+            const options = {
+                key: key,
+                amount: orderResult.data.amount,
+                currency: orderResult.data.currency,
+                name: "VendorStreet",
+                description: "Transaction for Order",
+                // image: "https://your-logo-url", 
+                order_id: orderResult.data.id,
+                handler: async function (response) {
+                    // 5. Verify Payment
+                    try {
+                        const verifyResponse = await fetch('http://localhost:5000/api/payment/verify-payment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        })
+                        const verifyResult = await verifyResponse.json()
+
+                        if (verifyResult.success) {
+                            // 6. Create Order in Database (as Paid)
+                            const finalOrderData = {
+                                items: cartItems.map(item => ({
+                                    listingId: item.id || item._id,
+                                    quantity: item.quantity
+                                })),
+                                shippingAddress: { // Mock address for MVP
+                                    street: '123 Main St',
+                                    city: 'Mumbai',
+                                    state: 'Maharashtra',
+                                    pincode: '400001',
+                                    phone: '9876543210'
+                                },
+                                paymentMethod: 'Online',
+                                paymentResult: {
+                                    id: response.razorpay_payment_id,
+                                    status: 'paid',
+                                    update_time: new Date().toISOString(),
+                                    email_address: 'user@example.com' // Mock
+                                }
+                            }
+
+                            const createOrderResponse = await fetch('http://localhost:5000/api/orders', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(finalOrderData)
+                            })
+                            const createOrderResult = await createOrderResponse.json()
+
+                            if (createOrderResult.success) {
+                                alert('Payment Successful! Order Placed.')
+                                clearCart()
+                                setIsCartOpen(false)
+                                navigate('/orders')
+                            } else {
+                                alert('Payment verified but Order creation failed: ' + createOrderResult.message)
+                            }
+                        } else {
+                            alert('Payment verification failed')
+                        }
+                    } catch (error) {
+                        console.error('Verification Error:', error)
+                        alert('Payment verification failed')
+                    }
+                },
+                prefill: {
+                    name: "VendorStreet User", // Should come from User Context
+                    email: "user@vendorstreet.com",
+                    contact: "9999999999"
+                },
+                notes: {
+                    address: "VendorStreet Corporate Office"
+                },
+                theme: {
+                    color: "#16a34a" // Green-600
+                }
+            }
+
+            const paymentObject = new window.Razorpay(options)
+            paymentObject.open()
+
         } catch (error) {
             console.error('Checkout error:', error)
             alert('An error occurred during checkout')

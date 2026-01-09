@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   PaperAirplaneIcon,
   PhoneIcon,
@@ -14,7 +14,8 @@ const Chat = ({ user }) => {
   const [activeChat, setActiveChat] = useState(null)
   const [allMessages, setAllMessages] = useState({}) // Store messages for all conversations
   const [newMessage, setNewMessage] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
+  // const [isTyping, setIsTyping] = useState(false) // Removed due to unused var lint error. Re-add when real-time typing is implemented.
+
   const messagesEndRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
   const socket = useSocket()
@@ -24,7 +25,7 @@ const Chat = ({ user }) => {
     // Reduced polling frequency as fallback
     const interval = setInterval(fetchConversations, 30000)
     return () => clearInterval(interval)
-  }, [user])
+  }, [user, fetchConversations])
 
   useEffect(() => {
     if (activeChat) {
@@ -33,7 +34,7 @@ const Chat = ({ user }) => {
       const interval = setInterval(() => fetchMessages(activeChat), 15000)
       return () => clearInterval(interval)
     }
-  }, [activeChat])
+  }, [activeChat, fetchMessages])
 
   // Socket.io Event Listeners
   useEffect(() => {
@@ -42,7 +43,7 @@ const Chat = ({ user }) => {
     socket.on('new_message', (message) => {
       // Find which conversation this message belongs to
       // In a real app, you might want to check if the message matches the current active chat
-      const recipientId = user.id === message.senderId ? message.recipientId : message.senderId
+      // usage of recipientId was conceptual. Logic below uses activeChat directly.
 
       // We need to identify the chat/conversation ID. 
       // Since our message object from backend might not satisfy all frontend needs immediately,
@@ -101,14 +102,14 @@ const Chat = ({ user }) => {
       socket.off('new_message')
       socket.off('conversation_updated')
     }
-  }, [socket, activeChat, conversations, user])
+  }, [socket, activeChat, conversations, user, fetchConversations])
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom()
-  }, [allMessages, activeChat, isTyping])
+  }, [allMessages, activeChat])
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       if (!token) return
@@ -131,9 +132,9 @@ const Chat = ({ user }) => {
       console.error('Error fetching conversations:', error)
       setIsLoading(false)
     }
-  }
+  }, [activeChat, isLoading]) // Added dependencies
 
-  const fetchMessages = async (chatId) => {
+  const fetchMessages = useCallback(async (chatId) => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch(`http://localhost:5000/api/chat/${chatId}/messages`, {
@@ -149,7 +150,7 @@ const Chat = ({ user }) => {
     } catch (error) {
       console.error('Error fetching messages:', error)
     }
-  }
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -344,18 +345,7 @@ const Chat = ({ user }) => {
                     </div>
                   ))}
 
-                  {/* Typing Indicator */}
-                  {isTyping && (
-                    <div className="flex justify-start">
-                      <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-200">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+
 
                   {/* Scroll anchor */}
                   <div ref={messagesEndRef} />
@@ -385,7 +375,7 @@ const Chat = ({ user }) => {
                     </div>
                     <button
                       onClick={sendMessage}
-                      disabled={!newMessage.trim() || isTyping}
+                      disabled={!newMessage.trim()}
                       className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                       title="Send message"
                     >

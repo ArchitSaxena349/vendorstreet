@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { 
+import {
   HeartIcon,
   ShoppingCartIcon,
   ChatBubbleLeftRightIcon,
@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 
-const Favorites = ({ user }) => {
+const Favorites = () => {
   const [favorites, setFavorites] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -211,7 +211,7 @@ const Favorites = ({ user }) => {
                   <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
                     {product.name}
                   </h3>
-                  
+
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-sm text-gray-600">{product.vendor}</span>
                     {product.vendorVerified && (
@@ -224,11 +224,10 @@ const Favorites = ({ user }) => {
                       {[...Array(5)].map((_, i) => (
                         <StarIcon
                           key={i}
-                          className={`h-4 w-4 ${
-                            i < Math.floor(product.rating)
+                          className={`h-4 w-4 ${i < Math.floor(product.rating)
                               ? 'text-yellow-400 fill-current'
                               : 'text-gray-300'
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>

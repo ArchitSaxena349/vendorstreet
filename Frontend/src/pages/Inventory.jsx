@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { 
+import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
@@ -8,7 +8,7 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline'
 
-const Inventory = ({ user }) => {
+const Inventory = () => {
   const [products, setProducts] = useState([])
   const [isAddingProduct, setIsAddingProduct] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
@@ -122,16 +122,16 @@ const Inventory = ({ user }) => {
 
   const updateProduct = () => {
     if (editingProduct) {
-      setProducts(products.map(product => 
-        product.id === editingProduct.id 
+      setProducts(products.map(product =>
+        product.id === editingProduct.id
           ? {
-              ...editingProduct,
-              price: parseFloat(editingProduct.price),
-              stock: parseInt(editingProduct.stock),
-              minOrder: parseInt(editingProduct.minOrder),
-              status: parseInt(editingProduct.stock) > 0 ? 'active' : 'out_of_stock',
-              lastUpdated: new Date().toISOString().split('T')[0]
-            }
+            ...editingProduct,
+            price: parseFloat(editingProduct.price),
+            stock: parseInt(editingProduct.stock),
+            minOrder: parseInt(editingProduct.minOrder),
+            status: parseInt(editingProduct.stock) > 0 ? 'active' : 'out_of_stock',
+            lastUpdated: new Date().toISOString().split('T')[0]
+          }
           : product
       ))
       setEditingProduct(null)
@@ -255,7 +255,7 @@ const Inventory = ({ user }) => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
