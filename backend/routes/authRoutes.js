@@ -10,7 +10,7 @@ import {
     uploadDocument,
     getDocuments,
     deleteDocument
-} from '../controllers/authController.js';
+} from '../controllers/auth.controller.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { uploadProfileImage as uploadMiddleware, uploadDocument as uploadDocMiddleware, handleUploadError } from '../middleware/upload.js';
 
