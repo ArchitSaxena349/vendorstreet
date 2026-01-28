@@ -21,6 +21,59 @@ const Chat = ({ user }) => {
   // const socket = useSocket()
   const socket = null // DEBUG: Disable socket to test crash
 
+  // Helper functions and Data Fetching
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const fetchConversations = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch('https://vendorstreet.onrender.com/api/chat/conversations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const result = await response.json()
+      console.log('Conversations fetch result:', result)
+      if (result.success && Array.isArray(result.data)) {
+        setConversations(result.data)
+        setIsLoading(false)
+
+        // If no active chat and we have conversations, select the first one
+        // Only do this on initial load to avoid jumping
+        if (!activeChat && result.data.length > 0 && isLoading) {
+          setActiveChat(result.data[0].id)
+        }
+      } else {
+        console.warn('Conversations fetch failed success check:', result)
+        setIsLoading(false)
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error)
+      setIsLoading(false)
+    }
+  }, [activeChat, isLoading]) // Added dependencies
+
+  const fetchMessages = useCallback(async (chatId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`https://vendorstreet.onrender.com/api/chat/${chatId}/messages`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const result = await response.json()
+      if (result.success) {
+        setAllMessages(prev => ({
+          ...prev,
+          [chatId]: result.data
+        }))
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+    }
+  }, [])
+
+  // Side Effects
   useEffect(() => {
     fetchConversations()
     // Reduced polling frequency as fallback
@@ -109,57 +162,6 @@ const Chat = ({ user }) => {
   useEffect(() => {
     scrollToBottom()
   }, [allMessages, activeChat])
-
-  const fetchConversations = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) return
-
-      const response = await fetch('https://vendorstreet.onrender.com/api/chat/conversations', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      const result = await response.json()
-      console.log('Conversations fetch result:', result)
-      if (result.success && Array.isArray(result.data)) {
-        setConversations(result.data)
-        setIsLoading(false)
-
-        // If no active chat and we have conversations, select the first one
-        // Only do this on initial load to avoid jumping
-        if (!activeChat && result.data.length > 0 && isLoading) {
-          setActiveChat(result.data[0].id)
-        }
-      } else {
-        console.warn('Conversations fetch failed success check:', result)
-        setIsLoading(false)
-      }
-    } catch (error) {
-      console.error('Error fetching conversations:', error)
-      setIsLoading(false)
-    }
-  }, [activeChat, isLoading]) // Added dependencies
-
-  const fetchMessages = useCallback(async (chatId) => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`https://vendorstreet.onrender.com/api/chat/${chatId}/messages`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      const result = await response.json()
-      if (result.success) {
-        setAllMessages(prev => ({
-          ...prev,
-          [chatId]: result.data
-        }))
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error)
-    }
-  }, [])
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   const sendMessage = async () => {
     if (newMessage.trim() && activeChat) {
@@ -430,4 +432,3 @@ const Chat = ({ user }) => {
 }
 
 export default Chat
-
