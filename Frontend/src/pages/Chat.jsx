@@ -118,6 +118,7 @@ const Chat = ({ user }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
+      console.log('Conversations fetch result:', result)
       if (result.success) {
         setConversations(result.data)
         setIsLoading(false)
@@ -127,6 +128,9 @@ const Chat = ({ user }) => {
         if (!activeChat && result.data.length > 0 && isLoading) {
           setActiveChat(result.data[0].id)
         }
+      } else {
+        console.warn('Conversations fetch failed success check:', result)
+        setIsLoading(false)
       }
     } catch (error) {
       console.error('Error fetching conversations:', error)
@@ -223,6 +227,7 @@ const Chat = ({ user }) => {
   }
 
   if (isLoading) {
+    console.log('Chat is loading...')
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -232,6 +237,8 @@ const Chat = ({ user }) => {
       </div>
     )
   }
+
+  console.log('Rendering Chat. Conversations:', conversations.length, 'Active:', activeChat)
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
