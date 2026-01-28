@@ -7,7 +7,7 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 
-import { useSocket } from '../context/SocketContext'
+// import { useSocket } from '../context/SocketContext'
 
 const Chat = ({ user }) => {
   const [conversations, setConversations] = useState([])
