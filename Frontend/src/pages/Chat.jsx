@@ -18,7 +18,8 @@ const Chat = ({ user }) => {
 
   const messagesEndRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
-  const socket = useSocket()
+  // const socket = useSocket()
+  const socket = null // DEBUG: Disable socket to test crash
 
   useEffect(() => {
     fetchConversations()
