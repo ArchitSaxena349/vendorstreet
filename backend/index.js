@@ -143,6 +143,15 @@ ConnectDB().then(() => {
         console.log(` Socket.io initialized`);
         console.log(` Health check: http://localhost:${PORT}/health`);
         console.log(` API Base URL: http://localhost:${PORT}/api`);
+
+        // DEBUG: Print controllers directory to verify file existence on server
+        import('fs').then(fs => {
+            const controllersPath = path.join(__dirname, 'controllers');
+            fs.readdir(controllersPath, (err, files) => {
+                if (err) console.error('DEBUG: Could not list controllers:', err);
+                else console.log('DEBUG: Controllers found:', files);
+            });
+        });
     });
 }).catch((error) => {
     console.error('Failed to start server:', error);
