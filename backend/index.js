@@ -25,9 +25,12 @@ const app = express();
 const httpServer = createServer(app);
 
 // Socket.io initialization
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = [frontendUrl, frontendUrl.replace(/\/$/, "")];
+
 const io = new Server(httpServer, {
     cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+        origin: allowedOrigins,
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
         credentials: true
     }
@@ -69,7 +72,7 @@ const limiter = rateLimit({
 // Middleware
 app.use(limiter);
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: allowedOrigins,
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
