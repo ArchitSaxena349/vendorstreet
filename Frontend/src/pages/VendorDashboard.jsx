@@ -119,28 +119,24 @@ const VendorDashboard = ({ user }) => {
     {
       label: 'Total Revenue',
       value: `₹${analytics.totalRevenue?.toLocaleString()}`,
-      change: '+15.5%',
       color: 'text-green-600',
       icon: CurrencyRupeeIcon
     },
     {
       label: 'Total Orders',
       value: analytics.totalOrders,
-      change: '+23%',
       color: 'text-blue-600',
       icon: ShoppingBagIcon
     },
     {
       label: 'Total Products',
       value: analytics.totalProducts,
-      change: '+12%',
       color: 'text-purple-600',
       icon: ChartBarIcon
     },
     {
       label: 'Profile Views',
       value: analytics.totalViews?.toLocaleString(),
-      change: '+8%',
       color: 'text-orange-600',
       icon: EyeIcon
     }
@@ -196,7 +192,6 @@ const VendorDashboard = ({ user }) => {
                 </div>
                 <div className="flex flex-col items-end space-y-1">
                   <stat.icon className="h-8 w-8 text-gray-400" />
-                  <span className={`text-sm ${stat.color}`}>{stat.change}</span>
                 </div>
               </div>
             </div>
@@ -328,7 +323,7 @@ const VendorDashboard = ({ user }) => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Rating</span>
-                  <span className="text-sm text-gray-900">4.5/5 (24 reviews)</span>
+                  <span className="text-sm text-gray-900">No ratings yet</span>
                 </div>
               </div>
 
@@ -378,27 +373,20 @@ const VendorDashboard = ({ user }) => {
             </div>
 
             {/* Performance Metrics */}
-            <div className="bg-white rounded-lg shadow p-6">
+            {/* Performance Metrics - Placeholder until backend data available */}
+            {/* <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Revenue</span>
-                  <span className="text-sm font-medium text-gray-900">₹45,600</span>
+                  <span className="text-sm font-medium text-gray-900">₹0</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Orders</span>
-                  <span className="text-sm font-medium text-gray-900">18</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Conversion Rate</span>
-                  <span className="text-sm font-medium text-gray-900">3.2%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Avg. Order Value</span>
-                  <span className="text-sm font-medium text-gray-900">₹2,533</span>
+                  <span className="text-sm font-medium text-gray-900">0</span>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

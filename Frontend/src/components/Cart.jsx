@@ -100,12 +100,12 @@ const Cart = () => {
                                     listingId: item.id || item._id,
                                     quantity: item.quantity
                                 })),
-                                shippingAddress: { // Mock address for MVP
-                                    street: '123 Main St',
-                                    city: 'Mumbai',
-                                    state: 'Maharashtra',
-                                    pincode: '400001',
-                                    phone: '9876543210'
+                                shippingAddress: {
+                                    street: '', // Needs user input
+                                    city: '',
+                                    state: '',
+                                    pincode: '',
+                                    phone: ''
                                 },
                                 paymentMethod: 'Online',
                                 paymentResult: {

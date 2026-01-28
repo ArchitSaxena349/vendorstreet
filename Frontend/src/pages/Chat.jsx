@@ -7,7 +7,7 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 
-// import { useSocket } from '../context/SocketContext'
+import { useSocket } from '../context/SocketContext'
 
 const Chat = ({ user }) => {
   const [conversations, setConversations] = useState([])
@@ -18,8 +18,7 @@ const Chat = ({ user }) => {
 
   const messagesEndRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
-  // const socket = useSocket()
-  const socket = null // DEBUG: Disable socket to test crash
+  const socket = useSocket()
 
   // Helper functions and Data Fetching
   const scrollToBottom = () => {
@@ -104,7 +103,6 @@ const Chat = ({ user }) => {
       // and we store messages by conversation ID (activeChat), we need to find the conversation.
       // However, the backend emits 'new_message' with message data.
 
-      // A simpler approach for this demo:
       // If the message belongs to the ACTIVE chat, append it.
       // We need to know who sent it.
 
