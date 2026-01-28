@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '../context/AuthContext'
 
 const URL = 'https://vendorstreet.onrender.com/api/auth/login'
 
-const Login = ({ onLogin }) => {
+const Login = () => {
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -65,10 +67,10 @@ const Login = ({ onLogin }) => {
         throw new Error('No authentication token received')
       }
 
-      // Pass the user object to onLogin
+      // Pass the user object to context
       if (data.data.user) {
 
-        onLogin(data.data.user)
+        login(data.data.user)
 
         // Navigate based on user role
         if (data.data.user.role === 'vendor') {

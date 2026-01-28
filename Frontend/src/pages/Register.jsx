@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '../context/AuthContext'
 
 const URL = 'https://vendorstreet.onrender.com/api/auth/register'
 
-const Register = ({ onLogin }) => {
+const Register = () => {
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -34,30 +36,30 @@ const Register = ({ onLogin }) => {
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password) {
       return 'Please fill in all required fields'
     }
-    
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
       return 'Please enter a valid email address'
     }
-    
+
     // Phone validation (basic)
     if (formData.phone.length < 10) {
       return 'Please enter a valid phone number'
     }
-    
+
     if (formData.password.length < 6) {
       return 'Password must be at least 6 characters long'
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       return 'Passwords do not match'
     }
-    
+
     if (!formData.agreeToTerms) {
       return 'Please agree to the terms and conditions'
     }
-    
+
     return null
   }
 
@@ -90,20 +92,20 @@ const Register = ({ onLogin }) => {
       })
 
       const data = await response.json()
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed')  
+        throw new Error(data.message || 'Registration failed')
       }
-      
+
       // Store the token in localStorage
       if (data.data && data.data.token) {
         localStorage.setItem('token', data.data.token)
       }
-      
-      // Pass the correct user object to onLogin
+
+      // Pass the correct user object to context
       if (data.data && data.data.user) {
-        onLogin(data.data.user)
-        
+        login(data.data.user)
+
         // Navigate based on user role
         if (data.data.user.role === 'vendor') {
           navigate('/vendor-dashboard')
@@ -115,7 +117,7 @@ const Register = ({ onLogin }) => {
       } else {
         throw new Error('Invalid response format')
       }
-      
+
     } catch (err) {
       console.error('Registration error:', err)
       setError(err.message || 'Registration failed. Please try again.')
@@ -372,7 +374,7 @@ const Register = ({ onLogin }) => {
 
               <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                 </svg>
                 <span className="ml-2">Twitter</span>
               </button>
