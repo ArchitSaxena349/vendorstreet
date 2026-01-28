@@ -67,17 +67,22 @@ const Login = () => {
         throw new Error('No authentication token received')
       }
 
-      // Pass the user object to context
       if (data.data.user) {
+        // DEBUG: Temporary alert to trace execution
+        // alert(`Login successful! Role: ${data.data.user.role}. Navigating...`)
+        console.log('Login successful', data.data.user)
 
         login(data.data.user)
 
         // Navigate based on user role
         if (data.data.user.role === 'vendor') {
+          console.log('Navigating to vendor dashboard')
           navigate('/vendor-dashboard')
         } else if (data.data.user.role === 'admin') {
+          console.log('Navigating to admin')
           navigate('/admin')
         } else {
+          console.log('Navigating to dashboard')
           navigate('/dashboard')
         }
       } else {
