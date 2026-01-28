@@ -117,9 +117,8 @@ const Chat = ({ user }) => {
       const response = await fetch('https://vendorstreet.onrender.com/api/chat/conversations', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      const result = await response.json()
       console.log('Conversations fetch result:', result)
-      if (result.success) {
+      if (result.success && Array.isArray(result.data)) {
         setConversations(result.data)
         setIsLoading(false)
 
@@ -250,7 +249,7 @@ const Chat = ({ user }) => {
               <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
             </div>
             <div className="overflow-y-auto h-full">
-              {conversations.map((conversation) => (
+              {Array.isArray(conversations) && conversations.map((conversation) => (
                 <div
                   key={conversation.id}
                   onClick={() => {
