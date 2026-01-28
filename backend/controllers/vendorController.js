@@ -1,5 +1,5 @@
 import VendorProfile from '../models/VendorProfile.js';
-import User from '../models/user.js';
+import User from '../models/User.js';
 import Listing from '../models/Listing.js';
 
 const applyForVendor = async (req, res) => {

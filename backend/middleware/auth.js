@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/user.js';
+import User from '../models/User.js';
 
 export const authenticate = async (req, res, next) => {
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
-        
+
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -14,7 +14,7 @@ export const authenticate = async (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
         const user = await User.findById(decoded.userId).select('-password');
-        
+
         if (!user || !user.isActive) {
             return res.status(401).json({
                 success: false,
@@ -48,16 +48,16 @@ export const authorize = (...roles) => {
 export const optionalAuth = async (req, res, next) => {
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
-        
+
         if (token) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
             const user = await User.findById(decoded.userId).select('-password');
-            
+
             if (user && user.isActive) {
                 req.user = { userId: user._id, role: user.role };
             }
         }
-        
+
         next();
     } catch (error) {
         // Continue without authentication for optional auth
