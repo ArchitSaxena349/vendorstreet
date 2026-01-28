@@ -35,12 +35,13 @@ export const SocketProvider = ({ children }) => {
                 setSocket(null);
             }
         }
-    }, [isAuthenticated, user, socket]);
+    }
+    }, [isAuthenticated, user]);
 
-    return (
-        <SocketContext.Provider value={socket}>
-            {children}
-        </SocketContext.Provider>
-    );
+return (
+    <SocketContext.Provider value={socket}>
+        {children}
+    </SocketContext.Provider>
+);
 };
 
