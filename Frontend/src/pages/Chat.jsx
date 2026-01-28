@@ -117,6 +117,7 @@ const Chat = ({ user }) => {
       const response = await fetch('https://vendorstreet.onrender.com/api/chat/conversations', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
+      const result = await response.json()
       console.log('Conversations fetch result:', result)
       if (result.success && Array.isArray(result.data)) {
         setConversations(result.data)
