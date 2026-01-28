@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { 
+import {
   MagnifyingGlassIcon,
   ShieldCheckIcon,
   ChatBubbleLeftRightIcon,
@@ -81,7 +81,7 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-     <section className="bg-gradient-to-r from-green-600 to-green-800 text-white">
+      <section className="bg-gradient-to-r from-green-600 to-green-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -91,7 +91,7 @@ const Home = () => {
             <p className="text-xl md:text-2xl mb-8 text-green-100 max-w-3xl mx-auto">
               Connect with verified vendors, discover quality ingredients, and grow your food business with VendorStreet
             </p>
-            
+
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-8">
               <form onSubmit={handleSearch} className="relative">
@@ -104,7 +104,7 @@ const Home = () => {
                   className="w-full bg-white px-6 py-4 pl-12 text-gray-900 rounded-full text-lg focus:ring-4 focus:ring-green-300 focus:outline-none"
                 />
                 <MagnifyingGlassIcon className="absolute left-4 top-4 h-6 w-6 text-gray-400" />
-                <button 
+                <button
                   type="submit"
                   className="absolute right-2 top-2 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors"
                 >
@@ -114,14 +114,14 @@ const Home = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                to="/register" 
+              <Link
+                to="/register"
                 className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 Start as Buyer
               </Link>
-              <Link 
-                to="/vendor-application" 
+              <Link
+                to="/register?role=vendor"
                 className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors"
               >
                 Become a Vendor
@@ -147,8 +147,8 @@ const Home = () => {
             {featuredCategories.map((category, index) => (
               <div key={index} className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-xl bg-gray-200 h-48 mb-4">
-                  <img 
-                    src={category.image} 
+                  <img
+                    src={category.image}
                     alt={category.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -164,8 +164,8 @@ const Home = () => {
           </div>
 
           <div className="text-center mt-12">
-            <Link 
-              to="/products" 
+            <Link
+              to="/products"
               className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
             >
               View All Products

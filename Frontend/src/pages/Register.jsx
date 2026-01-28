@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../context/AuthContext'
 
@@ -7,6 +7,9 @@ const URL = 'https://vendorstreet.onrender.com/api/auth/register'
 
 const Register = () => {
   const { login } = useAuth()
+  const [searchParams] = useSearchParams()
+  const initialRole = searchParams.get('role') || 'buyer'
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -15,7 +18,8 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     businessName: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    role: initialRole
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -87,7 +91,9 @@ const Register = () => {
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
-          role: 'buyer' // Default role
+          phone: formData.phone,
+          password: formData.password,
+          role: formData.role // Use selected role
         })
       })
 
