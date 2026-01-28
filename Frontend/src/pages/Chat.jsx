@@ -114,7 +114,7 @@ const Chat = ({ user }) => {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch('http://localhost:5000/api/chat/conversations', {
+      const response = await fetch('https://vendorstreet.onrender.com/api/chat/conversations', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
@@ -137,7 +137,7 @@ const Chat = ({ user }) => {
   const fetchMessages = useCallback(async (chatId) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/chat/${chatId}/messages`, {
+      const response = await fetch(`https://vendorstreet.onrender.com/api/chat/${chatId}/messages`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
@@ -181,7 +181,7 @@ const Chat = ({ user }) => {
         const conversation = conversations.find(c => c.id === activeChat)
         if (!conversation) return // Should not happen
 
-        const response = await fetch('http://localhost:5000/api/chat/send', {
+        const response = await fetch('https://vendorstreet.onrender.com/api/chat/send', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -422,3 +422,4 @@ const Chat = ({ user }) => {
 }
 
 export default Chat
+

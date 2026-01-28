@@ -42,13 +42,13 @@ const Cart = () => {
             }
 
             // 2. Get Razorpay Key
-            const keyResponse = await fetch('http://localhost:5000/api/payment/key', {
+            const keyResponse = await fetch('https://vendorstreet.onrender.com/api/payment/key', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const { key } = await keyResponse.json()
 
             // 3. Create Order on Backend
-            const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', {
+            const orderResponse = await fetch('https://vendorstreet.onrender.com/api/payment/create-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ const Cart = () => {
                 handler: async function (response) {
                     // 5. Verify Payment
                     try {
-                        const verifyResponse = await fetch('http://localhost:5000/api/payment/verify-payment', {
+                        const verifyResponse = await fetch('https://vendorstreet.onrender.com/api/payment/verify-payment', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const Cart = () => {
                                 }
                             }
 
-                            const createOrderResponse = await fetch('http://localhost:5000/api/orders', {
+                            const createOrderResponse = await fetch('https://vendorstreet.onrender.com/api/orders', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ const Cart = () => {
                                                                 <li key={product.id || product._id} className="flex py-6">
                                                                     <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                                                         <img
-                                                                            src={product.image || (product.imageUrl ? `http://localhost:5000${product.imageUrl}` : 'https://via.placeholder.com/100')}
+                                                                            src={product.image || (product.imageUrl ? `https://vendorstreet.onrender.com${product.imageUrl}` : 'https://via.placeholder.com/100')}
                                                                             alt={product.name || product.title}
                                                                             className="h-full w-full object-cover object-center"
                                                                         />
@@ -308,3 +308,4 @@ const Cart = () => {
 }
 
 export default Cart
+

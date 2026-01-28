@@ -24,7 +24,7 @@ const ProductDetails = () => {
 
                 // Temporary workaround: Fetch all and find (Inefficient but works for MVP)
                 // Real implementation should have GET /api/listings/:id
-                const response = await fetch('http://localhost:5000/api/listings')
+                const response = await fetch('https://vendorstreet.onrender.com/api/listings')
                 const data = await response.json()
                 if (data.success) {
                     const found = data.data.find(p => p._id === id)
@@ -58,7 +58,7 @@ const ProductDetails = () => {
         </div>
     )
 
-    const imageUrl = product.imageUrl ? `http://localhost:5000${product.imageUrl}` : 'https://via.placeholder.com/400'
+    const imageUrl = product.imageUrl ? `https://vendorstreet.onrender.com${product.imageUrl}` : 'https://via.placeholder.com/400'
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -164,3 +164,4 @@ const ProductDetails = () => {
 }
 
 export default ProductDetails
+

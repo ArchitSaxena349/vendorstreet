@@ -21,7 +21,7 @@ const AddProduct = () => {
         // Fetch categories
         const fetchCategories = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/categories')
+                const response = await fetch('https://vendorstreet.onrender.com/api/categories')
                 const data = await response.json()
                 if (data.success) {
                     setCategories(data.data.categories)
@@ -69,7 +69,7 @@ const AddProduct = () => {
             }
 
             const token = localStorage.getItem('token')
-            const response = await fetch('http://localhost:5000/api/listings', {
+            const response = await fetch('https://vendorstreet.onrender.com/api/listings', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -253,3 +253,4 @@ const AddProduct = () => {
 }
 
 export default AddProduct
+

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 
-const URL = 'http://localhost:5000/api/auth/login'
+const URL = 'https://vendorstreet.onrender.com/api/auth/login'
 
 const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -297,3 +297,4 @@ const Login = ({ onLogin }) => {
 }
 
 export default Login
+

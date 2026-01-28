@@ -182,7 +182,7 @@ const VendorApplication = ({ user }) => {
 
       const token = localStorage.getItem('token') // Assuming token is stored here
 
-      const response = await fetch('http://localhost:5000/api/vendors/apply', {
+      const response = await fetch('https://vendorstreet.onrender.com/api/vendors/apply', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -823,3 +823,4 @@ const VendorApplication = ({ user }) => {
 }
 
 export default VendorApplication
+

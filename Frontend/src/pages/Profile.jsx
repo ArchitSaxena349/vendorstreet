@@ -86,7 +86,7 @@ const Profile = () => {
     setIsLoading(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      const response = await fetch('https://vendorstreet.onrender.com/api/auth/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -98,7 +98,7 @@ const Profile = () => {
         setProfileData(data.data)
 
         // Fetch documents
-        const documentsResponse = await fetch('http://localhost:5000/api/auth/documents', {
+        const documentsResponse = await fetch('https://vendorstreet.onrender.com/api/auth/documents', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -185,7 +185,7 @@ const Profile = () => {
       formData.append('documentNumber', documentNumber)
       formData.append('expiryDate', documentExpiryDate)
 
-      const response = await fetch('http://localhost:5000/api/auth/documents', {
+      const response = await fetch('https://vendorstreet.onrender.com/api/auth/documents', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -244,7 +244,7 @@ const Profile = () => {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/auth/documents/${documentId}`, {
+      const response = await fetch(`https://vendorstreet.onrender.com/api/auth/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -280,7 +280,7 @@ const Profile = () => {
           formDataToSend.append('profileImage', profileImageFile)
         }
 
-        const response = await fetch('http://localhost:5000/api/auth/profile', {
+        const response = await fetch('https://vendorstreet.onrender.com/api/auth/profile', {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -300,7 +300,7 @@ const Profile = () => {
         }
       } else if (activeTab === 'business') {
         // Save business information
-        const response = await fetch('http://localhost:5000/api/auth/profile/vendor', {
+        const response = await fetch('https://vendorstreet.onrender.com/api/auth/profile/vendor', {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -1120,3 +1120,4 @@ const Profile = () => {
 }
 
 export default Profile
+

@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (isAuthenticated && user) {
-            const newSocket = io('http://localhost:5000', {
+            const newSocket = io('https://vendorstreet.onrender.com', {
                 withCredentials: true,
                 transports: ['websocket', 'polling']
             });
@@ -43,3 +43,4 @@ export const SocketProvider = ({ children }) => {
         </SocketContext.Provider>
     );
 };
+

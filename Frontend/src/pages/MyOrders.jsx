@@ -13,7 +13,7 @@ const MyOrders = () => {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/orders/my-orders', {
+      const response = await fetch('https://vendorstreet.onrender.com/api/orders/my-orders', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -94,7 +94,7 @@ const MyOrders = () => {
                         <div className="flex items-center space-x-4">
                           <div className="h-16 w-16 bg-gray-200 rounded-md overflow-hidden">
                             <img
-                              src={item.listing?.imageUrl ? `http://localhost:5000${item.listing.imageUrl}` : 'https://via.placeholder.com/64'}
+                              src={item.listing?.imageUrl ? `https://vendorstreet.onrender.com${item.listing.imageUrl}` : 'https://via.placeholder.com/64'}
                               alt={item.listing?.title}
                               className="h-full w-full object-cover"
                             />

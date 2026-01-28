@@ -22,7 +22,7 @@ const NotificationDropdown = () => {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch('http://localhost:5000/api/notifications', {
+      const response = await fetch('https://vendorstreet.onrender.com/api/notifications', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
@@ -99,7 +99,7 @@ const NotificationDropdown = () => {
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token')
-      await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+      await fetch(`https://vendorstreet.onrender.com/api/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -118,7 +118,7 @@ const NotificationDropdown = () => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token')
-      await fetch('http://localhost:5000/api/notifications/read-all', {
+      await fetch('https://vendorstreet.onrender.com/api/notifications/read-all', {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -133,7 +133,7 @@ const NotificationDropdown = () => {
   const removeNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('token')
-      await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+      await fetch(`https://vendorstreet.onrender.com/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })

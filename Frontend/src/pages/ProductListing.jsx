@@ -81,7 +81,7 @@ const ProductListing = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/listings')
+        const response = await fetch('https://vendorstreet.onrender.com/api/listings')
         const data = await response.json()
 
         if (data.success) {
@@ -97,7 +97,7 @@ const ProductListing = () => {
             unit: p.unit,
             originalPrice: p.price * 1.1, // Mock original price for now
             discount: 10,
-            image: p.imageUrl ? `http://localhost:5000${p.imageUrl}` : 'https://via.placeholder.com/300',
+            image: p.imageUrl ? `https://vendorstreet.onrender.com${p.imageUrl}` : 'https://via.placeholder.com/300',
             inStock: p.stockQuantity > 0,
             stockQuantity: p.stockQuantity,
             minOrder: p.minimumOrderQuantity,
@@ -625,3 +625,4 @@ const ProductListing = () => {
 }
 
 export default ProductListing
+
