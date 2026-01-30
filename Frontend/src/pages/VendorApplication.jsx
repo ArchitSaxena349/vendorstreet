@@ -106,13 +106,21 @@ const VendorApplication = ({ user }) => {
         if (!formData.businessAddress) newErrors.businessAddress = 'Business address is required'
         if (!formData.city) newErrors.city = 'City is required'
         if (!formData.state) newErrors.state = 'State is required'
-        if (!formData.pincode) newErrors.pincode = 'Pincode is required'
+        if (!formData.pincode) {
+          newErrors.pincode = 'Pincode is required'
+        } else if (!/^[0-9]{6}$/.test(formData.pincode)) {
+          newErrors.pincode = 'Pincode must be exactly 6 digits'
+        }
         if (!formData.contactPerson) newErrors.contactPerson = 'Contact person is required'
         if (!formData.phone) newErrors.phone = 'Phone number is required'
         break
 
       case 2:
-        if (!formData.fssaiLicense) newErrors.fssaiLicense = 'FSSAI license number is required'
+        if (!formData.fssaiLicense) {
+          newErrors.fssaiLicense = 'FSSAI license number is required'
+        } else if (!/^[0-9]{14}$/.test(formData.fssaiLicense)) {
+          newErrors.fssaiLicense = 'FSSAI license must be exactly 14 digits'
+        }
         if (!formData.fssaiDocument) newErrors.fssaiDocument = 'FSSAI license document is required'
         if (!formData.businessProof) newErrors.businessProof = 'Business proof document is required'
         break
@@ -163,10 +171,14 @@ const VendorApplication = ({ user }) => {
       data.append('fssaiLicense', formData.fssaiLicense)
 
       // Address construction
-      data.append('businessAddress[street]', formData.businessAddress)
-      data.append('businessAddress[city]', formData.city)
-      data.append('businessAddress[state]', formData.state)
-      data.append('businessAddress[pincode]', formData.pincode)
+      // Address construction - Send as JSON string for proper parsing on backend with multer
+      const addressObj = {
+        street: formData.businessAddress,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode
+      }
+      data.append('businessAddress', JSON.stringify(addressObj))
 
       // Files
       if (formData.fssaiDocument) {

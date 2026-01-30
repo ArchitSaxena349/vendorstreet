@@ -9,8 +9,21 @@ const applyForVendor = async (req, res) => {
             businessType,
             gstNumber,
             fssaiLicense,
-            businessAddress
+            businessAddress: rawBusinessAddress
         } = req.body;
+
+        let businessAddress = rawBusinessAddress;
+        if (typeof rawBusinessAddress === 'string') {
+            try {
+                businessAddress = JSON.parse(rawBusinessAddress);
+            } catch (e) {
+                console.error('Error parsing businessAddress:', e);
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid business address format"
+                });
+            }
+        }
 
         // Check if user already has a vendor profile
         const existingProfile = await VendorProfile.findOne({ userId: req.user.userId });
