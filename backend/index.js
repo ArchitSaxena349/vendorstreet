@@ -26,7 +26,12 @@ const httpServer = createServer(app);
 
 // Socket.io initialization
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-const allowedOrigins = [frontendUrl, frontendUrl.replace(/\/$/, "")];
+const allowedOrigins = [
+    frontendUrl, 
+    frontendUrl.replace(/\/$/, ""),
+    "https://vendorstreet.vercel.app",
+    "https://vendorstreet.vercel.app/"
+];
 
 const io = new Server(httpServer, {
     cors: {
