@@ -121,7 +121,7 @@ const Chat = ({ user }) => {
             [activeChat]: [...(prev[activeChat] || []), {
               id: message._id || 'socket-' + Date.now(),
               senderId: message.senderId,
-              message: message.content, // Backend sends 'content', frontend expects 'message' in some places or vice versa? verified: frontend uses .message
+              message: message.message, // Backend sends 'message', not 'content'
               timestamp: message.timestamp,
               isOwn: message.senderId === user.id
             }]
