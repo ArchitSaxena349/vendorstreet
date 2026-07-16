@@ -1,5 +1,6 @@
 
 import { useState } from 'react'
+import { API_BASE_URL } from '../config/api'
 import { useNavigate } from 'react-router-dom'
 import {
   UserIcon,
@@ -166,8 +167,10 @@ const VendorApplication = ({ user }) => {
     try {
       const data = new FormData()
       data.append('companyName', formData.businessName)
-      data.append('businessType', formData.businessType)
-      data.append('gstNumber', formData.gstNumber)
+      // The vendor profile stores marketplace roles, while this form asks for
+      // the company's legal structure. New applications are suppliers by default.
+      data.append('businessType', 'Supplier')
+      data.append('gstNumber', formData.gstNumber.trim().toUpperCase())
       data.append('fssaiLicense', formData.fssaiLicense)
 
       // Address construction
@@ -194,7 +197,7 @@ const VendorApplication = ({ user }) => {
 
       const token = localStorage.getItem('token') // Assuming token is stored here
 
-      const response = await fetch('https://vendorstreet.onrender.com/api/vendors/apply', {
+      const response = await fetch(`${API_BASE_URL}/vendors/apply`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -205,7 +208,7 @@ const VendorApplication = ({ user }) => {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.message || 'Submission failed')
+        throw new Error(result.errors?.join(', ') || result.message || 'Submission failed')
       }
 
       // Successful submission

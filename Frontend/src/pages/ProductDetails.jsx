@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { API_BASE_URL } from '../config/api'
 import { StarIcon, ShoppingCartIcon, ShieldCheckIcon, TruckIcon } from '@heroicons/react/24/solid'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
@@ -16,19 +17,10 @@ const ProductDetails = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                // We'll reuse the existing listing API but modify backend if needed
-                // Currently we don't have a direct get-one endpoint publicly documented
-                // So we might need to rely on the general list or create a specific one
-                // For now, let's assume we can filter or fetch all and find
-                // Optimization: Create GET /api/listings/:id
-
-                // Temporary workaround: Fetch all and find (Inefficient but works for MVP)
-                // Real implementation should have GET /api/listings/:id
-                const response = await fetch('https://vendorstreet.onrender.com/api/listings')
+                const response = await fetch(`${API_BASE_URL}/listings/${id}`)
                 const data = await response.json()
-                if (data.success) {
-                    const found = data.data.find(p => p._id === id)
-                    setProduct(found)
+                if (response.ok && data.success) {
+                    setProduct(data.data.listing)
                 }
             } catch (error) {
                 console.error('Error fetching product:', error)
@@ -58,7 +50,10 @@ const ProductDetails = () => {
         </div>
     )
 
-    const imageUrl = product.imageUrl ? `https://vendorstreet.onrender.com${product.imageUrl}` : 'https://via.placeholder.com/400'
+    const primaryImage = product.images?.find(image => image.isPrimary)?.url || product.images?.[0]?.url
+    const imageUrl = primaryImage
+        ? (primaryImage.startsWith('http') ? primaryImage : `${API_BASE_URL.replace('/api', '')}${primaryImage}`)
+        : 'https://via.placeholder.com/400'
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">

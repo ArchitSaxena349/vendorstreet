@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { API_BASE_URL } from '../config/api'
 import {
   BellIcon,
   CheckIcon,
@@ -22,7 +23,7 @@ const NotificationDropdown = () => {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch('https://vendorstreet.onrender.com/api/notifications', {
+      const response = await fetch(`${API_BASE_URL}/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
@@ -47,10 +48,8 @@ const NotificationDropdown = () => {
   // Let's assume for this specific replacement chunk we just do useCallback.
 
   useEffect(() => {
-    fetchNotifications()
-    const interval = setInterval(fetchNotifications, 15000)
-    return () => clearInterval(interval)
-  }, [fetchNotifications])
+    if (isOpen) fetchNotifications()
+  }, [isOpen, fetchNotifications])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -99,7 +98,7 @@ const NotificationDropdown = () => {
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token')
-      await fetch(`https://vendorstreet.onrender.com/api/notifications/${notificationId}/read`, {
+      await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -118,7 +117,7 @@ const NotificationDropdown = () => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token')
-      await fetch('https://vendorstreet.onrender.com/api/notifications/read-all', {
+      await fetch(`${API_BASE_URL}/notifications/read-all`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -133,7 +132,7 @@ const NotificationDropdown = () => {
   const removeNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('token')
-      await fetch(`https://vendorstreet.onrender.com/api/notifications/${notificationId}`, {
+      await fetch(`${API_BASE_URL}/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })

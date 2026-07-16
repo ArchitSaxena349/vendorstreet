@@ -9,6 +9,7 @@ import {
   EyeIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import { API_BASE_URL } from '../config/api'
 
 const AdminDashboard = () => {
   const [pendingVendors, setPendingVendors] = useState([])
@@ -27,14 +28,14 @@ const AdminDashboard = () => {
       }
 
       // Fetch pending vendors
-      const vendorsRes = await fetch('https://vendorstreet.onrender.com/api/vendors/pending', { headers })
+      const vendorsRes = await fetch(`${API_BASE_URL}/vendors/pending`, { headers })
       const vendorsData = await vendorsRes.json()
       if (vendorsData.success) {
         setPendingVendors(vendorsData.data)
       }
 
       // Fetch pending listings
-      const listingsRes = await fetch('https://vendorstreet.onrender.com/api/listings/admin/pending', { headers })
+      const listingsRes = await fetch(`${API_BASE_URL}/listings/admin/pending`, { headers })
       const listingsData = await listingsRes.json()
       if (listingsData.success) {
         setPendingListings(listingsData.data) // Assuming backend matches this naming
@@ -61,7 +62,7 @@ const AdminDashboard = () => {
   const handleVendorAction = async (vendorId, status) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`https://vendorstreet.onrender.com/api/vendors/${vendorId}/verify`, {
+      const response = await fetch(`${API_BASE_URL}/vendors/${vendorId}/verify`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ const AdminDashboard = () => {
   const handleListingAction = async (listingId, status) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`https://vendorstreet.onrender.com/api/listings/${listingId}/verify`, {
+      const response = await fetch(`${API_BASE_URL}/listings/${listingId}/verify`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

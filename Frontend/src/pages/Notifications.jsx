@@ -11,7 +11,7 @@ import {
   FunnelIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
-
+import { API_BASE_URL } from '../config/api'
 import { useSocket } from '../context/SocketContext'
 
 const Notifications = () => { // Removed unused user prop
@@ -26,7 +26,7 @@ const Notifications = () => { // Removed unused user prop
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch('https://vendorstreet.onrender.com/api/notifications', {
+      const response = await fetch(`${API_BASE_URL}/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
@@ -114,7 +114,7 @@ const Notifications = () => { // Removed unused user prop
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token')
-      await fetch(`https://vendorstreet.onrender.com/api/notifications/${notificationId}/read`, {
+      await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -132,7 +132,7 @@ const Notifications = () => { // Removed unused user prop
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token')
-      await fetch('https://vendorstreet.onrender.com/api/notifications/read-all', {
+      await fetch(`${API_BASE_URL}/notifications/read-all`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -146,7 +146,7 @@ const Notifications = () => { // Removed unused user prop
   const removeNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('token')
-      await fetch(`https://vendorstreet.onrender.com/api/notifications/${notificationId}`, {
+      await fetch(`${API_BASE_URL}/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -161,7 +161,7 @@ const Notifications = () => { // Removed unused user prop
     if (window.confirm('Are you sure you want to clear all notifications?')) {
       try {
         const token = localStorage.getItem('token')
-        await fetch('https://vendorstreet.onrender.com/api/notifications', {
+        await fetch(`${API_BASE_URL}/notifications`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         })

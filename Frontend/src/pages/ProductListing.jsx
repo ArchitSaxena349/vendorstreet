@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { API_BASE_URL } from '../config/api'
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -60,58 +61,68 @@ const ProductListing = () => {
 
   // Calculate dynamic category counts based on actual products
   const categoriesWithCounts = useMemo(() => {
-    const baseCategoriesData = [
-      { id: 'all', name: 'All Categories' },
-      { id: 'grains', name: 'Grains & Cereals' },
-      { id: 'spices', name: 'Spices & Herbs' },
-      { id: 'dairy', name: 'Dairy Products' },
-      { id: 'fruits', name: 'Fruits & Vegetables' },
-      { id: 'meat', name: 'Meat & Seafood' },
-      { id: 'oils', name: 'Oils & Fats' }
-    ]
+    const categories = new Map()
+    products.forEach(product => {
+      if (!categories.has(product.category)) {
+        categories.set(product.category, { id: product.category, name: product.categoryName, count: 0 })
+      }
+      categories.get(product.category).count += 1
+    })
 
-    return baseCategoriesData.map(category => ({
-      ...category,
-      count: category.id === 'all'
-        ? products.length
-        : products.filter(product => product.category === category.id).length
-    })).filter(category => category.count > 0 || category.id === 'all') // Only show categories with products
+    return [
+      { id: 'all', name: 'All Categories', count: products.length },
+      ...categories.values()
+    ]
   }, [products])
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://vendorstreet.onrender.com/api/listings')
+        const response = await fetch(`${API_BASE_URL}/listings`)
         const data = await response.json()
 
-        if (data.success) {
-          // Transform backend data to match frontend structure if needed
-          const formattedProducts = data.data.map(p => ({
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Unable to load products')
+        }
+
+        const listings = data.data?.listings || []
+        const formattedProducts = listings.map(p => {
+          const category = p.categoryId || {}
+          const vendor = p.vendorId || {}
+          const primaryImage = p.images?.find(image => image.isPrimary)?.url || p.images?.[0]?.url
+
+          return {
             id: p._id,
             name: p.title,
-            vendor: 'Unknown Vendor', // Backend needs to populate vendor name
-            vendorVerified: false, // Need to populate from vendor profile
-            vendorRating: 0, // Need to populate
-            category: p.categoryId, // Ensure this matches category IDs
+            vendor: vendor.companyName || 'Unknown Vendor',
+            vendorVerified: vendor.verificationStatus === 'verified',
+            vendorRating: vendor.rating || 0,
+            category: category.slug || category._id || 'other',
+            categoryName: category.name || 'Other',
             price: p.price,
             unit: p.unit,
             originalPrice: p.price * 1.1, // Mock original price for now
             discount: 10,
-            image: p.imageUrl ? `https://vendorstreet.onrender.com${p.imageUrl}` : 'https://via.placeholder.com/300',
+            image: primaryImage
+              ? (primaryImage.startsWith('http') ? primaryImage : `${API_BASE_URL.replace('/api', '')}${primaryImage}`)
+              : 'https://via.placeholder.com/300',
             inStock: p.stockQuantity > 0,
             stockQuantity: p.stockQuantity,
             minOrder: p.minimumOrderQuantity,
             description: p.description,
-            tags: ['fresh'], // Mock tags
+            tags: p.tags || [],
             rating: 0,
             reviews: 0,
-            location: 'India'
-          }))
-          setProducts(formattedProducts)
-          setFilteredProducts(formattedProducts)
-        }
+            location: vendor.businessAddress?.city || 'India'
+          }
+        })
+
+        setProducts(formattedProducts)
+        setFilteredProducts(formattedProducts)
       } catch (error) {
         console.error('Error fetching products:', error)
+        setProducts([])
+        setFilteredProducts([])
       }
     }
 

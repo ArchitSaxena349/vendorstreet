@@ -1,10 +1,16 @@
-
 import { connect } from 'mongoose';
+import dns from 'dns';
 
-const URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/VendorStreet';
+// Force node's DNS resolver to use public DNS servers to bypass local ISP/environment DNS SRV lookup failures
+try {
+    dns.setServers(['1.1.1.1', '8.8.8.8']);
+} catch (err) {
+    console.warn("Could not set DNS servers:", err.message);
+}
 
 const ConnectDB = async () =>{
     try{
+        const URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/VendorStreet';
         // Provide some sensible options and a short server selection timeout so failures surface quickly in platform logs
         await connect(URI, {
             // mongoose will infer the db from the URI; options below help reliability

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
   UserIcon,
@@ -11,6 +11,8 @@ import {
 import NotificationDropdown from './NotificationDropdown.jsx'
 import Cart from './Cart.jsx'
 import { useCart } from '../context/CartContext'
+import { useSocket } from '../context/SocketContext'
+import { API_BASE_URL } from '../config/api'
 
 const Header = ({ user, userRole, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -20,19 +22,14 @@ const Header = ({ user, userRole, onLogout }) => {
   const location = useLocation()
   const { toggleCart, cartCount } = useCart()
   const [unreadMessageCount, setUnreadMessageCount] = useState(0)
+  const socket = useSocket()
 
-  useEffect(() => {
-    if (user) {
-      fetchUnreadMessages()
-      const interval = setInterval(fetchUnreadMessages, 10000)
-      return () => clearInterval(interval)
-    }
-  }, [user])
+  const fetchUnreadMessages = useCallback(async () => {
+    const token = localStorage.getItem('token')
+    if (!token) return
 
-  const fetchUnreadMessages = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('https://vendorstreet.onrender.com/api/chat/conversations', {
+      const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
@@ -43,7 +40,23 @@ const Header = ({ user, userRole, onLogout }) => {
     } catch (error) {
       console.error('Error fetching unread messages:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!user) {
+      setUnreadMessageCount(0)
+      return
+    }
+
+    fetchUnreadMessages()
+  }, [user, fetchUnreadMessages])
+
+  useEffect(() => {
+    if (!socket) return
+
+    socket.on('conversation_updated', fetchUnreadMessages)
+    return () => socket.off('conversation_updated', fetchUnreadMessages)
+  }, [socket, fetchUnreadMessages])
 
   // Hide header search on products page since it has its own search
   const shouldShowHeaderSearch = !location.pathname.startsWith('/products')
@@ -138,7 +151,7 @@ const Header = ({ user, userRole, onLogout }) => {
 
                 <Link
                   to="/chat"
-                  className="relative text-gray-700 hover:text-green-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="relative bg-transparent text-gray-700 hover:text-green-600 p-2 rounded-lg hover:bg-transparent transition-colors"
                   title="Messages"
                 >
                   <ChatBubbleLeftRightIcon className="h-6 w-6" />

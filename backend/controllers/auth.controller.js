@@ -36,17 +36,26 @@ const home = async (req, res) => {
 const register = async (req, res) => {
     try {
         const { email, password, firstName, lastName, phone, role = 'buyer' } = req.body;
+        const normalizedEmail = email?.trim().toLowerCase();
+        const normalizedPhone = phone?.replace(/[\s-]/g, '');
 
         // Validation
-        if (!email || !password || !firstName || !lastName) {
+        if (!normalizedEmail || !password || !firstName?.trim() || !lastName?.trim() || !normalizedPhone) {
             return res.status(400).json({
                 success: false,
                 message: "All required fields must be provided"
             });
         }
 
+        if (!['buyer', 'vendor'].includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please choose a valid account type'
+            });
+        }
+
         // Check if user already exists
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: normalizedEmail });
         if (existingUser) {
             return res.status(400).json({
                 success: false,
@@ -56,11 +65,11 @@ const register = async (req, res) => {
 
         // Create user
         const user = new User({
-            email,
+            email: normalizedEmail,
             password,
-            firstName,
-            lastName,
-            phone,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            phone: normalizedPhone,
             role
         });
 

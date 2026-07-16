@@ -13,8 +13,11 @@ import {
   PhotoIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
+import { API_BASE_URL } from '../config/api'
+import { useAuth } from '../context/AuthContext'
 
 const Profile = () => {
+  const { updateUser } = useAuth()
   const [activeTab, setActiveTab] = useState('personal')
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -86,7 +89,7 @@ const Profile = () => {
     setIsLoading(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('https://vendorstreet.onrender.com/api/auth/profile', {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -96,9 +99,12 @@ const Profile = () => {
       const data = await response.json()
       if (data.success) {
         setProfileData(data.data)
+        if (data.data.user) {
+          updateUser(data.data.user)
+        }
 
         // Fetch documents
-        const documentsResponse = await fetch('https://vendorstreet.onrender.com/api/auth/documents', {
+        const documentsResponse = await fetch(`${API_BASE_URL}/auth/documents`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -185,7 +191,7 @@ const Profile = () => {
       formData.append('documentNumber', documentNumber)
       formData.append('expiryDate', documentExpiryDate)
 
-      const response = await fetch('https://vendorstreet.onrender.com/api/auth/documents', {
+      const response = await fetch(`${API_BASE_URL}/auth/documents`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -195,8 +201,14 @@ const Profile = () => {
 
       const data = await response.json()
       if (data.success) {
-        // Add the new document to the list
-        setDocuments(prev => [...prev, data.data.document])
+        // Add the new document to the list, transforming _id to id to match other documents
+        const uploadedDoc = data.data.document ? {
+          ...data.data.document,
+          id: data.data.document.id || data.data.document._id
+        } : null;
+        if (uploadedDoc) {
+          setDocuments(prev => [...prev, uploadedDoc])
+        }
 
         // Reset form
         setShowUploadModal(false)
@@ -244,7 +256,7 @@ const Profile = () => {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`https://vendorstreet.onrender.com/api/auth/documents/${documentId}`, {
+      const response = await fetch(`${API_BASE_URL}/auth/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -253,7 +265,7 @@ const Profile = () => {
 
       const data = await response.json()
       if (data.success) {
-        setDocuments(prev => prev.filter(doc => doc.id !== documentId))
+        setDocuments(prev => prev.filter(doc => (doc.id || doc._id) !== documentId))
         alert('Document deleted successfully!')
       } else {
         alert('Failed to delete document: ' + data.message)
@@ -280,7 +292,7 @@ const Profile = () => {
           formDataToSend.append('profileImage', profileImageFile)
         }
 
-        const response = await fetch('https://vendorstreet.onrender.com/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -300,7 +312,7 @@ const Profile = () => {
         }
       } else if (activeTab === 'business') {
         // Save business information
-        const response = await fetch('https://vendorstreet.onrender.com/api/auth/profile/vendor', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile/vendor`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -858,7 +870,7 @@ const Profile = () => {
                 ) : (
                   <div className="space-y-4">
                     {documents.map((document) => (
-                      <div key={document.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                      <div key={document.id || document._id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-4">
                             <div className="flex-shrink-0">
@@ -953,7 +965,7 @@ const Profile = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => handleDeleteDocument(document.id)}
+                              onClick={() => handleDeleteDocument(document.id || document._id)}
                               className="text-red-600 hover:text-red-700 p-1"
                               title="Delete document"
                             >

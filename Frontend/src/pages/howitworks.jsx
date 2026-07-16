@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // Placeholder icons can be replaced with a library like react-icons or SVGs
 const Step = ({ number, title, description, colorClass = 'bg-green-600' }) => (
@@ -15,6 +16,13 @@ const Step = ({ number, title, description, colorClass = 'bg-green-600' }) => (
 );
 
 const HowItWorksPage = () => {
+  const { user } = useAuth();
+  const dashboardLink = user?.role === 'vendor'
+    ? '/vendor-dashboard'
+    : user?.role === 'admin'
+      ? '/admin-dashboard'
+      : '/dashboard';
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -105,8 +113,8 @@ const HowItWorksPage = () => {
                       Become part of a growing community dedicated to revolutionizing the food supply industry.
                   </p>
                   <div className="flex flex-col sm:flex-row justify-center gap-4">
-                      <Link to="/register" className="bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
-                          Sign Up Now
+                      <Link to={user ? dashboardLink : '/register'} className="bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
+                          {user ? 'Go to Dashboard' : 'Sign Up Now'}
                       </Link>
                       <Link to="/contact" className="bg-white text-green-600 font-semibold py-3 px-8 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
                           Contact Us

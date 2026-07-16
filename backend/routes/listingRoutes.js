@@ -11,6 +11,7 @@ import {
     verifyListing
 } from '../controllers/listingController.js';
 import { authenticate, authorize, optionalAuth } from '../middleware/auth.js';
+import upload from '../middleware/uploadMiddleware.js';
 
 const router = Router();
 
@@ -19,7 +20,7 @@ router.route('/').get(optionalAuth, getListings);
 router.route('/:id').get(optionalAuth, getListingById);
 
 // Vendor routes
-router.route('/').post(authenticate, authorize('vendor'), createListing);
+router.route('/').post(authenticate, authorize('vendor'), upload.single('image'), createListing);
 router.route('/vendor/my-listings').get(authenticate, authorize('vendor'), getVendorListings);
 router.route('/:id').put(authenticate, authorize('vendor'), updateListing);
 router.route('/:id').delete(authenticate, authorize('vendor'), deleteListing);

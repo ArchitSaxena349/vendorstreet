@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import {
   MagnifyingGlassIcon,
   ShieldCheckIcon,
@@ -12,6 +13,12 @@ import {
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const dashboardLink = user?.role === 'vendor'
+    ? '/vendor-dashboard'
+    : user?.role === 'admin'
+      ? '/admin-dashboard'
+      : '/dashboard'
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -89,7 +96,7 @@ const Home = () => {
               <span className="block text-green-200">Food Raw Materials</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-green-100 max-w-3xl mx-auto">
-              Connect with verified vendors, discover quality ingredients, and grow your food business with VendorStreet
+              Browse suppliers as a guest, then create a buyer account to add items to your cart, place orders, and manage them in one place.
             </p>
 
             {/* Search Bar */}
@@ -114,18 +121,37 @@ const Home = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/register"
-                className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-              >
-                Start as Buyer
-              </Link>
-              <Link
-                to="/register?role=vendor"
-                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors"
-              >
-                Become a Vendor
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    to={dashboardLink}
+                    className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    Go to Dashboard
+                  </Link>
+                  <Link
+                    to="/products"
+                    className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors"
+                  >
+                    Browse Products
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/register?role=buyer"
+                    className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    Start as Buyer
+                  </Link>
+                  <Link
+                    to="/register?role=vendor"
+                    className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors"
+                  >
+                    Become a Vendor
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

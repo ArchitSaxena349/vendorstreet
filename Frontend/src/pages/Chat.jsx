@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { useSocket } from '../context/SocketContext'
+import { API_BASE_URL } from '../config/api'
 
 const Chat = ({ user }) => {
   const [conversations, setConversations] = useState([])
@@ -30,20 +31,16 @@ const Chat = ({ user }) => {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch('https://vendorstreet.onrender.com/api/chat/conversations', {
+      const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
-      console.log('Conversations fetch result:', result)
       if (result.success && Array.isArray(result.data)) {
         setConversations(result.data)
         setIsLoading(false)
 
-        // If no active chat and we have conversations, select the first one
-        // Only do this on initial load to avoid jumping
-        if (!activeChat && result.data.length > 0 && isLoading) {
-          setActiveChat(result.data[0].id)
-        }
+        // Select an initial conversation without recreating this fetch callback.
+        setActiveChat(currentChat => currentChat || result.data[0]?.id || null)
       } else {
         console.warn('Conversations fetch failed success check:', result)
         setIsLoading(false)
@@ -52,12 +49,12 @@ const Chat = ({ user }) => {
       console.error('Error fetching conversations:', error)
       setIsLoading(false)
     }
-  }, [activeChat, isLoading]) // Added dependencies
+  }, [])
 
   const fetchMessages = useCallback(async (chatId) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`https://vendorstreet.onrender.com/api/chat/${chatId}/messages`, {
+      const response = await fetch(`${API_BASE_URL}/chat/${chatId}/messages`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const result = await response.json()
@@ -75,17 +72,11 @@ const Chat = ({ user }) => {
   // Side Effects
   useEffect(() => {
     fetchConversations()
-    // Reduced polling frequency as fallback
-    const interval = setInterval(fetchConversations, 30000)
-    return () => clearInterval(interval)
-  }, [user, fetchConversations])
+  }, [fetchConversations])
 
   useEffect(() => {
     if (activeChat) {
       fetchMessages(activeChat)
-      // Reduced polling frequency as fallback
-      const interval = setInterval(() => fetchMessages(activeChat), 15000)
-      return () => clearInterval(interval)
     }
   }, [activeChat, fetchMessages])
 
@@ -186,7 +177,7 @@ const Chat = ({ user }) => {
         const conversation = conversations.find(c => c.id === activeChat)
         if (!conversation) return // Should not happen
 
-        const response = await fetch('https://vendorstreet.onrender.com/api/chat/send', {
+        const response = await fetch(`${API_BASE_URL}/chat/send`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -228,7 +219,6 @@ const Chat = ({ user }) => {
   }
 
   if (isLoading) {
-    console.log('Chat is loading...')
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -239,7 +229,6 @@ const Chat = ({ user }) => {
     )
   }
 
-  console.log('Rendering Chat. Conversations:', conversations.length, 'Active:', activeChat)
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

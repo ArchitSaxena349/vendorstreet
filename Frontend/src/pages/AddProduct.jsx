@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PhotoIcon } from '@heroicons/react/24/solid'
+import { API_BASE_URL } from '../config/api'
 
 const AddProduct = () => {
     const navigate = useNavigate()
@@ -21,10 +22,10 @@ const AddProduct = () => {
         // Fetch categories
         const fetchCategories = async () => {
             try {
-                const response = await fetch('https://vendorstreet.onrender.com/api/categories')
+                const response = await fetch(`${API_BASE_URL}/categories`)
                 const data = await response.json()
                 if (data.success) {
-                    setCategories(data.data.categories)
+                    setCategories(data.data?.categories ?? data.data)
                 }
             } catch (error) {
                 console.error('Failed to fetch categories:', error)
@@ -69,7 +70,7 @@ const AddProduct = () => {
             }
 
             const token = localStorage.getItem('token')
-            const response = await fetch('https://vendorstreet.onrender.com/api/listings', {
+            const response = await fetch(`${API_BASE_URL}/listings`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -80,7 +81,10 @@ const AddProduct = () => {
             const result = await response.json()
 
             if (!response.ok) {
-                throw new Error(result.message || 'Failed to create product')
+                const errorMsg = result.errors && Array.isArray(result.errors)
+                    ? `Validation failed:\n${result.errors.join('\n')}`
+                    : (result.message || 'Failed to create product');
+                throw new Error(errorMsg)
             }
 
             alert('Product created successfully! It will be visible after admin approval.')
@@ -158,9 +162,9 @@ const AddProduct = () => {
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                                 >
                                     <option value="kg">Per Kg</option>
-                                    <option value="g">Per Gram</option>
-                                    <option value="l">Per Litre</option>
-                                    <option value="pc">Per Piece</option>
+                                    <option value="gram">Per Gram</option>
+                                    <option value="liter">Per Litre</option>
+                                    <option value="piece">Per Piece</option>
                                     <option value="dozen">Per Dozen</option>
                                     <option value="box">Per Box</option>
                                 </select>

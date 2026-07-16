@@ -11,7 +11,10 @@
     "start": "cd backend && npm start",
     "install-deps": "npm install && cd backend && npm install && cd ../Frontend && npm install",
     "setup": "npm run install-deps && npm run build",
-    "lint": "cd Frontend && npm run lint"
+    "lint": "cd Frontend && npm run lint",
+    "seed": "cd backend && node utils/seeder.js",
+    "verify-vendors": "cd backend && node utils/verifyVendors.js",
+    "make-admin": "cd backend && node utils/makeAdmin.js"
   },
   "keywords": [
     "marketplace",

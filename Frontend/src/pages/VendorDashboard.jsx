@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE_URL } from '../config/api'
 import { Link } from 'react-router-dom'
 import {
   PlusIcon,
@@ -27,11 +28,11 @@ const VendorDashboard = ({ user }) => {
         const headers = { 'Authorization': `Bearer ${token}` }
 
         // Fetch Dashboard Stats & Listings
-        const dashboardRes = await fetch('https://vendorstreet.onrender.com/api/vendors/dashboard', { headers })
+        const dashboardRes = await fetch(`${API_BASE_URL}/vendors/dashboard`, { headers })
         const dashboardResult = await dashboardRes.json()
 
         // Fetch Vendor Orders
-        const ordersRes = await fetch('https://vendorstreet.onrender.com/api/orders/vendor-orders', { headers })
+        const ordersRes = await fetch(`${API_BASE_URL}/orders/vendor-orders`, { headers })
         const ordersResult = await ordersRes.json()
 
         let recentOrders = []

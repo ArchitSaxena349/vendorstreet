@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from '../config/api'
 
 const Cart = () => {
     const { cartItems, removeFromCart, updateQuantity, cartTotal, isCartOpen, setIsCartOpen, clearCart } = useCart()
@@ -10,6 +11,8 @@ const Cart = () => {
     const [isCheckingOut, setIsCheckingOut] = useState(false)
 
     const loadScript = (src) => {
+        if (window.Razorpay) return Promise.resolve(true)
+
         return new Promise((resolve) => {
             const script = document.createElement('script')
             script.src = src
@@ -42,13 +45,13 @@ const Cart = () => {
             }
 
             // 2. Get Razorpay Key
-            const keyResponse = await fetch('https://vendorstreet.onrender.com/api/payment/key', {
+            const keyResponse = await fetch(`${API_BASE_URL}/payment/key`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const { key } = await keyResponse.json()
 
             // 3. Create Order on Backend
-            const orderResponse = await fetch('https://vendorstreet.onrender.com/api/payment/create-order', {
+            const orderResponse = await fetch(`${API_BASE_URL}/payment/create-order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -79,7 +82,7 @@ const Cart = () => {
                 handler: async function (response) {
                     // 5. Verify Payment
                     try {
-                        const verifyResponse = await fetch('https://vendorstreet.onrender.com/api/payment/verify-payment', {
+                        const verifyResponse = await fetch(`${API_BASE_URL}/payment/verify-payment`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -116,7 +119,7 @@ const Cart = () => {
                                 }
                             }
 
-                            const createOrderResponse = await fetch('https://vendorstreet.onrender.com/api/orders', {
+                            const createOrderResponse = await fetch(`${API_BASE_URL}/orders`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

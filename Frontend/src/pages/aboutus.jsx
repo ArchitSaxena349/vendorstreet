@@ -1,10 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // You can use an icon library like 'react-icons' for better visuals
 // import { FiShield, FiMessageCircle, FiBox, FiCheckCircle } from 'react-icons/fi';
 
 const AboutPage = () => {
+  const { user } = useAuth();
+  const dashboardLink = user?.role === 'vendor'
+    ? '/vendor-dashboard'
+    : user?.role === 'admin'
+      ? '/admin-dashboard'
+      : '/dashboard';
+
   return (
     <div className="bg-white text-gray-800">
       {/* Hero Section */}
@@ -96,12 +104,25 @@ const AboutPage = () => {
             Whether you're a buyer looking for reliable suppliers or a vendor aiming to expand your reach, VendorStreet is the platform for you.
           </p>
           <div className="flex justify-center gap-4">
-            <Link to="/register" className="bg-white text-green-600 font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
-              Get Started as a Buyer
-            </Link>
-            <Link to="/vendor-application" className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors">
-              Apply to be a Vendor
-            </Link>
+            {user ? (
+              <>
+                <Link to={dashboardLink} className="bg-white text-green-600 font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
+                  Go to Dashboard
+                </Link>
+                <Link to="/products" className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors">
+                  Browse Products
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/register" className="bg-white text-green-600 font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
+                  Get Started as a Buyer
+                </Link>
+                <Link to="/vendor-application" className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors">
+                  Apply to be a Vendor
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>

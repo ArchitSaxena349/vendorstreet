@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../context/AuthContext'
+import { API_BASE_URL } from '../config/api'
 
-const URL = 'https://vendorstreet.onrender.com/api/auth/register'
+const URL = `${API_BASE_URL}/auth/register`
 
 const Register = () => {
   const { login } = useAuth()
@@ -25,6 +26,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const navigate = useNavigate()
 
   const handleInputChange = (e) => {
@@ -34,37 +36,31 @@ const Register = () => {
       [name]: type === 'checkbox' ? checked : value
     })
     setError('')
+    setFieldErrors(previous => ({ ...previous, [name]: '' }))
   }
 
   const validateForm = () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password) {
-      return 'Please fill in all required fields'
-    }
-
-    // Email validation
+    const errors = {}
+    if (!formData.firstName.trim()) errors.firstName = 'First name is required'
+    if (!formData.lastName.trim()) errors.lastName = 'Last name is required'
+    if (!formData.email.trim()) errors.email = 'Email address is required'
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      return 'Please enter a valid email address'
-    }
+    if (formData.email && !emailRegex.test(formData.email)) errors.email = 'Enter a valid email address'
 
-    // Phone validation (basic)
-    if (formData.phone.length < 10) {
-      return 'Please enter a valid phone number'
-    }
+    const normalizedPhone = formData.phone.replace(/[\s-]/g, '')
+    if (!formData.phone) errors.phone = 'Phone number is required'
+    else if (!/^\+?[1-9]\d{9,14}$/.test(normalizedPhone)) errors.phone = 'Enter a valid phone number, including country code if applicable'
 
-    if (formData.password.length < 6) {
-      return 'Password must be at least 6 characters long'
-    }
+    if (!formData.password) errors.password = 'Password is required'
+    else if (formData.password.length < 6) errors.password = 'Password must be at least 6 characters long'
 
-    if (formData.password !== formData.confirmPassword) {
-      return 'Passwords do not match'
-    }
+    if (!formData.confirmPassword) errors.confirmPassword = 'Please confirm your password'
+    else if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Passwords do not match'
 
-    if (!formData.agreeToTerms) {
-      return 'Please agree to the terms and conditions'
-    }
+    if (!formData.agreeToTerms) errors.agreeToTerms = 'You must agree to the terms and conditions'
 
-    return null
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
   const handleSubmit = async (e) => {
@@ -72,9 +68,8 @@ const Register = () => {
     setIsLoading(true)
     setError('')
 
-    const validationError = validateForm()
-    if (validationError) {
-      setError(validationError)
+    if (!validateForm()) {
+      setError('Please correct the highlighted fields.')
       setIsLoading(false)
       return
     }
@@ -89,9 +84,7 @@ const Register = () => {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-          phone: formData.phone,
+          phone: formData.phone.replace(/[\s-]/g, ''),
           password: formData.password,
           role: formData.role // Use selected role
         })
@@ -173,9 +166,10 @@ const Register = () => {
                     required
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 ${fieldErrors.firstName ? 'border-red-500' : 'border-gray-300'}`}
                     placeholder="John"
                   />
+                  {fieldErrors.firstName && <p className="mt-1 text-sm text-red-600">{fieldErrors.firstName}</p>}
                 </div>
               </div>
 
@@ -191,9 +185,10 @@ const Register = () => {
                     required
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 ${fieldErrors.lastName ? 'border-red-500' : 'border-gray-300'}`}
                     placeholder="Doe"
                   />
+                  {fieldErrors.lastName && <p className="mt-1 text-sm text-red-600">{fieldErrors.lastName}</p>}
                 </div>
               </div>
             </div>
@@ -211,9 +206,10 @@ const Register = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="john@example.com"
                 />
+                {fieldErrors.email && <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>}
               </div>
             </div>
 
@@ -229,9 +225,10 @@ const Register = () => {
                   required
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                  placeholder="+91 9876543210"
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="+91 9876543210"
                 />
+                {fieldErrors.phone && <p className="mt-1 text-sm text-red-600">{fieldErrors.phone}</p>}
               </div>
             </div>
 
@@ -265,7 +262,7 @@ const Register = () => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  className={`appearance-none block w-full px-3 py-2 pr-10 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 ${fieldErrors.password ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="Minimum 6 characters"
                 />
                 <button
@@ -280,6 +277,7 @@ const Register = () => {
                   )}
                 </button>
               </div>
+              {fieldErrors.password && <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>}
             </div>
 
             <div>
@@ -295,7 +293,7 @@ const Register = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  className={`appearance-none block w-full px-3 py-2 pr-10 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 ${fieldErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="Confirm your password"
                 />
                 <button
@@ -310,6 +308,7 @@ const Register = () => {
                   )}
                 </button>
               </div>
+              {fieldErrors.confirmPassword && <p className="mt-1 text-sm text-red-600">{fieldErrors.confirmPassword}</p>}
             </div>
 
             <div className="flex items-center">
@@ -333,6 +332,7 @@ const Register = () => {
                 </Link>
               </label>
             </div>
+            {fieldErrors.agreeToTerms && <p className="text-sm text-red-600">{fieldErrors.agreeToTerms}</p>}
 
             <div>
               <button
@@ -355,8 +355,11 @@ const Register = () => {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <p className="mt-4 text-center text-xs text-gray-500">
+              Social sign-up is not configured yet. Please create an account with email and password.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <button type="button" disabled title="Google sign-up is not configured" className="w-full inline-flex justify-center py-2 px-4 border border-gray-200 rounded-md bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
@@ -378,7 +381,7 @@ const Register = () => {
                 <span className="ml-2">Google</span>
               </button>
 
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <button type="button" disabled title="Twitter sign-up is not configured" className="w-full inline-flex justify-center py-2 px-4 border border-gray-200 rounded-md bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                 </svg>

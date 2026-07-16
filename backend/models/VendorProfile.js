@@ -14,7 +14,11 @@ const vendorProfileSchema = new mongoose.Schema({
     },
     businessType: {
         type: String,
-        enum: ['Trader', 'Manufacturer', 'Supplier', 'Distributor', 'Wholesaler']
+        enum: [
+            'Trader', 'Manufacturer', 'Supplier', 'Distributor', 'Wholesaler',
+            'Sole Proprietorship', 'Partnership', 'Private Limited Company',
+            'Limited Liability Partnership', 'Cooperative Society', 'Other'
+        ]
     },
     gstNumber: {
         type: String,
